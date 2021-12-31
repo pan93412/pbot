@@ -45,7 +45,7 @@ async fn main() {
         .expect("failed to login");
 
     /* Phase III: Initiate FwdModule  */
-    let fwd_mod = {
+    let fwd_chat = Arc::new({
         // Resolve the chat ID from the environment variable `TG_FWD_TO`.
         //
         // For details, see the implementation of Handler<ResolveChatCommand> in ClientActor.
@@ -58,17 +58,18 @@ async fn main() {
         // Unpack the Chat object from the PackedChat.
         //
         // For details, see the implementation of Handler<UnpackChatCommand> in ClientActor.
-        let fwd_chat = client
+        client
             .send(UnpackChatCommand(pack_chat))
             .await
             .unwrap()
-            .expect("failed to unpack the chat");
+            .expect("failed to unpack the chat")
+    });
 
-        // We initiate the FwdModule with the Chat object.
+    // We initiate the FwdModule with the Chat object.
+    let fwd_mod = 
         FwdModuleActor::activate_module(FwdModuleConfig {
-            target: Arc::new(fwd_chat),
-        })
-    };
+            target: fwd_chat.clone(),
+        });
 
     /* Phase IV: Initiate ClientModuleExecutor */
     let executor = ClientModuleExecutor {
