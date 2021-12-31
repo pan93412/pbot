@@ -2,11 +2,11 @@
 
 use std::sync::Arc;
 
-use actix::{Actor, Context, Handler, fut::WrapFuture, ContextFutureSpawner};
-use grammers_client::{types::{Chat}};
-use log::{info, error, warn};
+use actix::{fut::WrapFuture, Actor, Context, ContextFutureSpawner, Handler};
+use grammers_client::types::Chat;
+use log::{error, info, warn};
 
-use crate::telegram::{user::is_root_user, client::commands::ForwardSingleMessageCommand};
+use crate::telegram::{client::commands::ForwardSingleMessageCommand, user::is_root_user};
 
 use super::base::{ActivatedModuleInfo, ModuleActivator, ModuleMessage, ModuleMeta};
 
@@ -38,7 +38,7 @@ impl Handler<ModuleMessage> for FwdModuleActor {
 
     fn handle(&mut self, msg: ModuleMessage, ctx: &mut Self::Context) -> Self::Result {
         let ModuleMessage { handle, message } = msg;
-        
+
         if message.text() == "!cufwd" && is_root_user(&*message) {
             let reply_message_id = message.reply_to_message_id();
             let reply_message_src = Arc::new(message.chat());
@@ -46,11 +46,13 @@ impl Handler<ModuleMessage> for FwdModuleActor {
             if let Some(reply_message_id) = reply_message_id {
                 let target = self.target.clone();
                 async move {
-                    let client_result = handle.send(ForwardSingleMessageCommand {
-                        forward_to: target,
-                        message_id: reply_message_id,
-                        message_chat: reply_message_src,
-                    }).await;
+                    let client_result = handle
+                        .send(ForwardSingleMessageCommand {
+                            forward_to: target,
+                            message_id: reply_message_id,
+                            message_chat: reply_message_src,
+                        })
+                        .await;
                     match client_result {
                         Ok(forward_result) => match forward_result {
                             Ok(_) => info!("💬 Message forwarded!"),
@@ -60,7 +62,9 @@ impl Handler<ModuleMessage> for FwdModuleActor {
                             error!("Failed to request client to forward message: {:?}", e);
                         }
                     };
-                }.into_actor(self).spawn(ctx)
+                }
+                .into_actor(self)
+                .spawn(ctx)
             } else {
                 warn!("!cufwd: no reply message found");
             }
@@ -79,7 +83,9 @@ impl ModuleActivator for FwdModuleActor {
     type Config = FwdModuleConfig;
 
     fn activate_module(config: Self::Config) -> ActivatedModuleInfo {
-        let actor = Self { target: config.target };
+        let actor = Self {
+            target: config.target,
+        };
         let name = actor.name();
         let addr = actor.start();
 

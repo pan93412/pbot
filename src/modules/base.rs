@@ -2,8 +2,8 @@
 
 use std::sync::Arc;
 
-use actix::{Handler, Message, Recipient, Addr};
-use grammers_client::{types};
+use actix::{Addr, Handler, Message, Recipient};
+use grammers_client::types;
 
 use crate::telegram::client::ClientActor;
 

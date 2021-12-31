@@ -1,4 +1,4 @@
-use grammers_client::{Client, Config, SignInError, types::Message};
+use grammers_client::{types::Message, Client, Config, SignInError};
 use grammers_session::Session;
 use log::{debug, info};
 
@@ -46,17 +46,26 @@ pub async fn login(conf: LoginConfig) -> anyhow::Result<Client> {
             Err(SignInError::PasswordRequired(password_token)) => {
                 /* Phase 2-4-1 [PwdRequried]: Let user input their password. */
                 info!("user::login(): ⚠️  You need to enter your password to authorize. Type your password to here, then press Enter!");
-                info!("user::login(): hint: {}", password_token.hint().map(|v| v.as_str()).unwrap_or_else(|| "None"));
+                info!(
+                    "user::login(): hint: {}",
+                    password_token
+                        .hint()
+                        .map(|v| v.as_str())
+                        .unwrap_or_else(|| "None")
+                );
 
                 let password = rpassword::prompt_password_stderr("Password: ").unwrap();
 
                 info!("user::login(): 😶 Checking password...");
-                client.check_password(password_token, password.trim()).await.expect("error singing in (2FA)");
-            },
+                client
+                    .check_password(password_token, password.trim())
+                    .await
+                    .expect("error singing in (2FA)");
+            }
             Err(e) => {
                 panic!("error signing in: {:?}", e);
             }
-            _ => {},
+            _ => {}
         };
 
         info!("user::login(): ✅ Authorized successfully!");
@@ -72,7 +81,7 @@ pub async fn login(conf: LoginConfig) -> anyhow::Result<Client> {
 }
 
 /// Get the sender's ID of this message.
-/// 
+///
 /// If we can't get the sender's ID,
 /// we returns `-1145141919810`.
 fn get_sender(message: &Message) -> String {

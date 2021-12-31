@@ -1,7 +1,7 @@
 use core::fmt;
 use std::sync::Arc;
 
-use actix::{Actor, Context, Handler, Message, Addr};
+use actix::{Actor, Addr, Context, Handler, Message};
 
 use grammers_client::Update::NewMessage;
 use log::{debug, error, info};
