@@ -6,7 +6,7 @@ use log::info;
 use super::base::{ActivatedModuleInfo, ModuleActivator, ModuleMessage, ModuleMeta};
 
 /// The GetInfoModule module that is for debugging.
-/// 
+///
 /// We don't recommended you enabling this without a reasonable reason,
 /// since it is useless while noising.
 #[derive(Clone)]

@@ -1,7 +1,7 @@
 use actix::prelude::*;
 
-use simple_logger::SimpleLogger;
 use dotenv::dotenv;
+use simple_logger::SimpleLogger;
 
 use pbot::getenv;
 use pbot::SESSION_PATH;
@@ -9,13 +9,13 @@ use pbot::SESSION_PATH;
 use log::error;
 use std::sync::Arc;
 
-use pbot::{modules::{
+use pbot::modules::{
     base::ModuleActivator,
     fwd::{FwdModuleActor, FwdModuleConfig},
-}};
+};
 use pbot::telegram::{
     client::{
-        commands::{LoginCommand, ResolveChatCommand, UnpackChatCommand, NextUpdatesCommand},
+        commands::{LoginCommand, NextUpdatesCommand, ResolveChatCommand, UnpackChatCommand},
         ClientActor,
     },
     update::{ClientModuleExecutor, ClientModuleMessage},
@@ -88,10 +88,7 @@ async fn main() {
         // Get the Update object by iterating UpdateIter.
         for update in updates {
             // Send request to ClientModuleExecutor, let it distribute Update to modules.
-            let result = executor
-                .send(ClientModuleMessage { update })
-                .await
-                .unwrap();
+            let result = executor.send(ClientModuleMessage { update }).await.unwrap();
 
             // When the ClientModuleExecutor returns an error, we log it.
             if let Err(e) = result {

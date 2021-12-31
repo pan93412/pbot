@@ -22,7 +22,7 @@ pub struct FwdModuleActor {
 /// The configuration of FwdModule.
 pub struct FwdModuleConfig {
     /// Where the message will be forwarded to.
-    /// 
+    ///
     /// It will be used to initiate [`FwdModuleActor`].
     pub target: Arc<Chat>,
 }
@@ -111,9 +111,7 @@ impl Handler<ModuleMessage> for FwdModuleActor {
                     // FIXME: It is pretty costly.
                     (*message)
                         .clone()
-                        .edit(InputMessage::text(
-                            "[PBOT] ⚠️ 請回覆訊息。",
-                        ))
+                        .edit(InputMessage::text("[PBOT] ⚠️ 請回覆訊息。"))
                         .await?;
                 }
             }

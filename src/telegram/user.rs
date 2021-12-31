@@ -16,7 +16,7 @@ pub struct LoginConfig {
     /// You may obtain your own in https://my.telegram.org/auth.
     pub api_hash: String,
     /// Your mobile number.
-    /// 
+    ///
     /// For [`grammers_client::client::auth::Client::request_login_code`]
     pub mobile_number: String,
     /// The path to the session storing the login information.

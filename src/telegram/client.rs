@@ -1,5 +1,5 @@
 //! PBot: Telegram: Client Actor
-//! 
+//!
 //! This encapsulates the Telegram client as a Actor
 //! so we can manage and track the instance well.
 
@@ -117,12 +117,11 @@ impl Handler<ResolveChatCommand> for ClientActor {
                 let client = client.lock().unwrap();
 
                 // Get the dialogs iterator.
-                // 
+                //
                 // "Dialogs" is full list of chats with messages and auxiliary data.
                 // https://core.telegram.org/constructor/messages.dialogs
                 client.iter_dialogs()
             };
-
 
             // Iterate over the dialogs.
             while let Some(dialog) = dialogs.next().await? {

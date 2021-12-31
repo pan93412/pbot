@@ -1,5 +1,5 @@
 //! PBot Library
-//! 
+//!
 //! It includes the PBot modules, PBot Telegram clients encapsulation,
 //! and the utils such as [`getenv`].
 

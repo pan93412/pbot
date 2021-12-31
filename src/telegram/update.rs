@@ -2,8 +2,8 @@
 
 use actix::prelude::*;
 
-use std::sync::Arc;
 use log::{error, info};
+use std::sync::Arc;
 
 use super::client::ClientActor;
 
@@ -12,7 +12,7 @@ use grammers_client::Update::NewMessage;
 use crate::modules::base::{ActivatedModuleInfo, ModuleMessage};
 
 /// The message for a ClientModule.
-/// 
+///
 /// See main.rs > Phase V: Polling updates
 #[derive(Message)]
 #[rtype(result = "anyhow::Result<()>")]
@@ -68,7 +68,8 @@ impl Handler<ClientModuleMessage> for ClientModuleExecutor {
                 //
                 // Note that we clone() twice - first to workaround the lifetime issue,
                 // this to let the every modules consume.
-                let recv = module.recipient
+                let recv = module
+                    .recipient
                     .send(ModuleMessage {
                         handle: handle.clone(),
                         message: message.clone(),
