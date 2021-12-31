@@ -10,7 +10,7 @@ use dotenv::dotenv;
 use log::error;
 use modules::{
     base::ModuleActivator,
-    fwd::{FwdModuleActor, FwdModuleConfig},
+    fwd::{FwdModuleActor, FwdModuleConfig}, getinfo::GetInfoModuleActor,
 };
 use simple_logger::SimpleLogger;
 use telegram::{
@@ -30,7 +30,7 @@ const SESSION_PATH: &str = "./.telegram.session.dat";
 async fn main() {
     SimpleLogger::new()
         .with_utc_timestamps()
-        .with_level(log::LevelFilter::Info)
+        .with_level(log::LevelFilter::Debug)
         .init()
         .expect("failed to configure logger");
     dotenv().expect("a .env file should be existed in the current working directory");
@@ -62,6 +62,7 @@ async fn main() {
             target: Arc::new(fwd_chat),
         })
     };
+    // let getinfo_mod = GetInfoModuleActor::activate_module(());
 
     let executor = ClientModuleExecutor {
         client: client.clone(),
