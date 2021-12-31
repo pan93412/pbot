@@ -66,9 +66,9 @@ impl Handler<ModuleMessage> for FwdModuleActor {
                         },
                         Err(e) => error!("Failed to forward message: {:?}", e),
                     }
+                } else {
+                    warn!("!cufwd: no reply message found");
                 }
-            } else {
-                warn!("!cufwd: no reply message found");
             }
 
             Ok(())
