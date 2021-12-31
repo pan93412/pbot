@@ -2,19 +2,23 @@
 
 use std::sync::Arc;
 
-use actix::{Actor, Context, Handler, fut::WrapFuture, AsyncContext, ActorFutureExt, ContextFutureSpawner};
-use grammers_client::{Client, types::chat::PackedChat};
+use actix::{Actor, Context, Handler, fut::WrapFuture, ContextFutureSpawner};
+use grammers_client::{types::{Chat}};
 use log::{info, error, warn};
-use tokio::sync::OnceCell;
 
-use crate::{getenv, utils::is_root_user};
+use crate::telegram::user::is_root_user;
 
 use super::base::{ActivatedModuleInfo, ModuleActivator, ModuleMessage, ModuleMeta};
 
 /// The `!fwd` module.
 #[derive(Clone)]
 pub struct FwdModuleActor {
-    pub target: PackedChat,
+    pub target: Arc<Chat>,
+}
+
+/// The configuration of FwdModule.
+pub struct FwdModuleConfig {
+    pub target: Arc<Chat>,
 }
 
 impl Actor for FwdModuleActor {
@@ -40,31 +44,18 @@ impl Handler<ModuleMessage> for FwdModuleActor {
             let reply_message_src = message.chat();
 
             if let Some(reply_message_id) = reply_message_id {
-                async {
-                    let cugroup = handle.unpack_chat(&self.target).await;
-                    let forward_message = handle.forward_messages(&cugroup, &reply_message_id, &reply_message_src);
-    
+                let target = self.target.clone();
+                async move {
+                    let forward_message = handle.forward_messages(&target, [reply_message_id].as_ref(), &reply_message_src).await;
+
                     if let Err(e) = forward_message {
-                        error!("Failed to forward message: {}", e);
+                        error!("!cufwd: failed to forward message: {}", e);
                     }
-                }.into_actor(self).wait(ctx);
+                }.into_actor(self).spawn(ctx)
             } else {
                 warn!("!cufwd: no reply message found");
             }
         }
-        let sender = message
-            .sender()
-            .map(|c| c.id().to_string())
-            .unwrap_or_else(|| "None".to_string());
-
-        info!(
-            "recv: {} [id={}, sender={}, is_root={}]",
-            message.text(),
-            message.id(),
-            sender,
-            sender == getenv!("TG_ROOT_USER")
-        );
-
         Ok(())
     }
 }
@@ -76,8 +67,10 @@ impl ModuleMeta for FwdModuleActor {
 }
 
 impl ModuleActivator for FwdModuleActor {
-    fn activate_module() -> ActivatedModuleInfo {
-        let actor = Self::default();
+    type Config = FwdModuleConfig;
+
+    fn activate_module(config: Self::Config) -> ActivatedModuleInfo {
+        let actor = Self { target: config.target };
         let name = actor.name();
         let addr = actor.start();
 

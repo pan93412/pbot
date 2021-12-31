@@ -31,7 +31,9 @@ pub trait ModuleActivator
 where
     Self: Handler<ModuleMessage>,
 {
+    type Config;
+
     /// Activate this module and get [`ActivatedModuleInfo`] including
     /// the module name and the recipient to this module.
-    fn activate_module() -> ActivatedModuleInfo;
+    fn activate_module(config: Self::Config) -> ActivatedModuleInfo;
 }

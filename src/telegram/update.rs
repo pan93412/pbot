@@ -75,7 +75,7 @@ impl std::error::Error for UnhandledMessage {}
 ///
 /// It includes the Ctrl-C handler.
 pub async fn client_handler(
-    client: Arc<Client>,
+    client: &Client,
     executors: Recipient<ClientModuleMessage>,
 ) -> anyhow::Result<()> {
     while let Some(updates) = tokio::select! {

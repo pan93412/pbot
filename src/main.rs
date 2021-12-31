@@ -6,11 +6,11 @@ use std::sync::Arc;
 
 use actix::Actor;
 use dotenv::dotenv;
-use modules::enabled_modules;
+use modules::{fwd::{FwdModuleActor, FwdModuleConfig}, base::ModuleActivator};
 use simple_logger::SimpleLogger;
 use telegram::{
     update::client_handler,
-    user::{login, LoginConfig},
+    user::{login, LoginConfig}, chat::resolve_chat,
 };
 
 use crate::telegram::update::ClientModuleExecutor;
@@ -33,15 +33,22 @@ async fn main() {
         session_path: SESSION_PATH,
     };
 
-    let client = Arc::new(login(login_config).await.expect("failed to login"));
+    let mut client = login(login_config).await.expect("failed to login");
+
+    let fwd_chat = client.unpack_chat(&resolve_chat(&client, getenv!("TG_FWD_TO", i32)).await.expect("failed to get the chat forward to")).await.expect("failed to unpack the chat");
+    let fwd_mod = FwdModuleActor::activate_module(FwdModuleConfig {
+        target: Arc::new(fwd_chat)
+    });
+
+    let client = Arc::new(client);
 
     let executor = ClientModuleExecutor {
         client: client.clone(),
-        modules: enabled_modules(),
+        modules: vec![fwd_mod]
     };
 
     let executor_recipient = executor.start().recipient();
-    client_handler(client.clone(), executor_recipient)
+    client_handler(&client, executor_recipient)
         .await
         .expect("failed to handle updates");
 }
