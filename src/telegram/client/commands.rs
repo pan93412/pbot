@@ -6,7 +6,7 @@ use super::super::user::LoginConfig;
 use actix::prelude::*;
 use grammers_client::types::iter_buffer::InvocationError;
 use grammers_client::types::{chat::PackedChat, Chat};
-use grammers_client::{UpdateIter, InputMessage};
+use grammers_client::{InputMessage, UpdateIter};
 
 /// Logging in to Telegram.
 #[derive(Message)]

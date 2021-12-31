@@ -68,10 +68,14 @@ impl Handler<ClientModuleMessage> for ClientModuleExecutor {
                 //
                 // Note that we clone() twice - first to workaround the lifetime issue,
                 // this to let the every modules consume.
-                let error = module.recipient.send(ModuleMessage {
-                    handle: handle.clone(),
-                    message: message.clone(),
-                }).await.unwrap();
+                let error = module
+                    .recipient
+                    .send(ModuleMessage {
+                        handle: handle.clone(),
+                        message: message.clone(),
+                    })
+                    .await
+                    .unwrap();
 
                 // module.name is the module name;
                 // e is the error from module.recipient.send().

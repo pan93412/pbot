@@ -43,7 +43,7 @@ async fn main() {
         .await
         .expect("failed to login");
 
-    /* Phase III: Initiate FwdModule  */
+    /* Phase III: Initiate FwdModule */
     let fwd_mod = {
         // Resolve the chat ID from the environment variable `TG_FWD_TO`.
         //
