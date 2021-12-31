@@ -1,8 +1,7 @@
-use grammers_client::{types::Message, Client, Config, SignInError};
+use grammers_client::{types::{Message}, Client, Config, SignInError};
+use grammers_client::types::Chat::User;
 use grammers_session::Session;
 use log::{debug, info};
-
-use crate::getenv;
 
 /// The login configuration.
 pub struct LoginConfig {
@@ -80,17 +79,12 @@ pub async fn login(conf: LoginConfig) -> anyhow::Result<Client> {
     Ok(client)
 }
 
-/// Get the sender's ID of this message.
-///
-/// If we can't get the sender's ID,
-/// we returns `-1145141919810`.
-fn get_sender(message: &Message) -> String {
-    message
-        .sender()
-        .map(|c| c.id().to_string())
-        .unwrap_or_else(|| "-1145141919810".to_string())
-}
-
 pub fn is_root_user(message: &Message) -> bool {
-    get_sender(message) == getenv!("TG_ROOT_USER")
+    message.sender().map(|c| {
+        if let User(u) = c {
+            u.is_self()
+        } else {
+            false
+        }
+    }).unwrap_or(false)
 }
