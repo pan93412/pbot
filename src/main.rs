@@ -1,19 +1,13 @@
-#[warn(missing_docs)]
-mod modules;
-mod telegram;
-mod utils;
-
 use std::sync::Arc;
-
-use actix::Actor;
+use actix::prelude::*;
 use dotenv::dotenv;
 use log::error;
-use modules::{
+use pbot::{modules::{
     base::ModuleActivator,
     fwd::{FwdModuleActor, FwdModuleConfig},
-};
+}, getenv};
 use simple_logger::SimpleLogger;
-use telegram::{
+use pbot::telegram::{
     client::{
         commands::{LoginCommand, ResolveChatCommand, UnpackChatCommand},
         ClientActor,
@@ -22,7 +16,7 @@ use telegram::{
     user::LoginConfig,
 };
 
-use crate::telegram::client::commands::NextUpdatesCommand;
+use pbot::telegram::client::commands::NextUpdatesCommand;
 
 const SESSION_PATH: &str = "./.telegram.session.dat";
 
@@ -62,7 +56,6 @@ async fn main() {
             target: Arc::new(fwd_chat),
         })
     };
-    // let getinfo_mod = GetInfoModuleActor::activate_module(());
 
     let executor = ClientModuleExecutor {
         client: client.clone(),
