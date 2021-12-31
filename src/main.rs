@@ -30,7 +30,7 @@ const SESSION_PATH: &str = "./.telegram.session.dat";
 async fn main() {
     SimpleLogger::new()
         .with_utc_timestamps()
-        .with_level(log::LevelFilter::Debug)
+        .with_level(log::LevelFilter::Info)
         .init()
         .expect("failed to configure logger");
     dotenv().expect("a .env file should be existed in the current working directory");
