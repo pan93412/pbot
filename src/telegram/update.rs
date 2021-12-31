@@ -62,26 +62,24 @@ impl Handler<ClientModuleMessage> for ClientModuleExecutor {
             // so we can share it with those modules.
             let message = Arc::new(message?);
 
-            // Iterate over all modules.
-            for module in modules.iter() {
+            // Join all the .send() futures.
+            futures::future::join_all(modules.iter().map(|module| async {
                 // Forward our handle and message to the module.
                 //
                 // Note that we clone() twice - first to workaround the lifetime issue,
                 // this to let the every modules consume.
-                let recv = module
-                    .recipient
-                    .send(ModuleMessage {
-                        handle: handle.clone(),
-                        message: message.clone(),
-                    })
-                    .await?;
+                let error = module.recipient.send(ModuleMessage {
+                    handle: handle.clone(),
+                    message: message.clone(),
+                }).await.unwrap();
 
                 // module.name is the module name;
                 // e is the error from module.recipient.send().
-                if let Err(e) = recv {
+                if let Err(e) = error {
                     error!("failed to broadcast message to {}: {:?}", module.name, e);
                 }
-            }
+            }))
+            .await;
 
             Ok(())
         }

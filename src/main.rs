@@ -6,7 +6,6 @@ use simple_logger::SimpleLogger;
 use pbot::getenv;
 use pbot::SESSION_PATH;
 
-use log::error;
 use std::sync::Arc;
 
 use pbot::modules::{
@@ -85,15 +84,13 @@ async fn main() {
     .unwrap()
     .expect("failed to retrieve updates")
     {
-        // Get the Update object by iterating UpdateIter.
-        for update in updates {
-            // Send request to ClientModuleExecutor, let it distribute Update to modules.
-            let result = executor.send(ClientModuleMessage { update }).await.unwrap();
-
-            // When the ClientModuleExecutor returns an error, we log it.
-            if let Err(e) = result {
-                error!("error in exectutors: {:?}", e);
-            }
-        }
+        // Join all the .send() futures.
+        futures::future::join_all(
+            updates
+                .into_iter()
+                // Send request to ClientModuleExecutor, let it distribute Update to modules.
+                .map(|update| executor.send(ClientModuleMessage { update })),
+        )
+        .await;
     }
 }
