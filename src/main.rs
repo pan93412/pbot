@@ -66,7 +66,7 @@ async fn main() {
 
     let executor = ClientModuleExecutor {
         client: client.clone(),
-        modules: vec![fwd_mod],
+        modules: Arc::new(vec![fwd_mod]),
     }
     .start();
 

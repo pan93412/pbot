@@ -1,7 +1,7 @@
 use core::fmt;
 use std::sync::Arc;
 
-use actix::{Actor, Addr, Context, Handler, Message};
+use actix::prelude::*;
 
 use grammers_client::Update::NewMessage;
 use log::{debug, error, info};
@@ -23,7 +23,7 @@ pub struct ClientModuleExecutor {
     ///
     /// The first element is the module name;
     /// the second element is the recipient of [`ModuleMessage`].
-    pub modules: Vec<ActivatedModuleInfo>,
+    pub modules: Arc<Vec<ActivatedModuleInfo>>,
 }
 
 impl Actor for ClientModuleExecutor {
@@ -39,27 +39,33 @@ impl Actor for ClientModuleExecutor {
 }
 
 impl Handler<ClientModuleMessage> for ClientModuleExecutor {
-    type Result = anyhow::Result<()>;
+    type Result = ResponseActFuture<Self, anyhow::Result<()>>;
 
-    fn handle(&mut self, msg: ClientModuleMessage, _: &mut Self::Context) -> Self::Result {
-        debug!("ClientModuleExector: start processing ClientModuleMessage");
-        let message = match &msg.update {
-            NewMessage(message) => Ok(Arc::new(message.clone())),
-            _ => Err(UnhandledMessage),
-        }?;
+    fn handle(&mut self, msg: ClientModuleMessage, ctx: &mut Self::Context) -> Self::Result {
+        let modules = self.modules.clone();
+        let handle = self.client.clone();
 
-        for module in self.modules.iter() {
-            let handle = self.client.clone();
-            let message = message.clone();
-
-            let recv = module.recipient.try_send(ModuleMessage { handle, message });
-
-            if let Err(e) = recv {
-                error!("failed to broadcast message to {}: {:?}", module.name, e);
+        async move {
+            debug!("ClientModuleExector: start processing ClientModuleMessage");
+            let message = match &msg.update {
+                NewMessage(message) => Ok(Arc::new(message.clone())),
+                _ => Err(UnhandledMessage),
+            }?;
+    
+            for module in modules.iter() {
+                let recipient = module.recipient.clone();
+    
+                let recv = recipient.send(ModuleMessage { handle, message }).await?;
+    
+                if let Err(e) = recv {
+                    error!("failed to broadcast message to {}: {:?}", module.name, e);
+                }
             }
-        }
 
-        Ok(())
+            Ok(())
+        }
+            .into_actor(self)
+            .boxed_local()
     }
 }
 
