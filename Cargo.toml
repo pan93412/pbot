@@ -1,6 +1,6 @@
 [package]
 name = "pbot"
-description = "pan93412's extensible userbot, which is full-documented, enginnered and based on Actor model."
+description = "pan93412's extensible userbot, which is full-documented, engineered and based on Actor model."
 authors = ["pan93412 <pan93412@gmail.com>"]
 repository = "https://github.com/pan93412/pbot"
 keywords = ["pbot", "actor", "userbot", "bot", "extensible", "full-documented", "enginnered"]
