@@ -1,13 +1,16 @@
-mod telegram;
 mod modules;
+mod telegram;
 
 use std::{env, sync::Arc};
 
 use actix::Actor;
 use dotenv::dotenv;
-use modules::{enabled_modules};
+use modules::enabled_modules;
 use simple_logger::SimpleLogger;
-use telegram::{user::{LoginConfig, login}, update::client_handler};
+use telegram::{
+    update::client_handler,
+    user::{login, LoginConfig},
+};
 
 use crate::telegram::update::ClientModuleExecutor;
 
@@ -26,14 +29,16 @@ macro_rules! getenv {
 
 #[actix::main]
 async fn main() {
-    SimpleLogger::new().init().expect("failed to configure logger");
+    SimpleLogger::new()
+        .init()
+        .expect("failed to configure logger");
     dotenv().expect("a .env file should be existed in the current working directory");
 
     let login_config = LoginConfig {
         api_id: getenv!("TG_ID", usize),
         api_hash: getenv!("TG_HASH"),
         mobile_number: getenv!("TG_MOBILE_NUMBER"),
-        session_path: SESSION_PATH
+        session_path: SESSION_PATH,
     };
 
     let client = Arc::new(login(login_config).await.expect("failed to login"));
@@ -44,5 +49,7 @@ async fn main() {
     };
 
     let executor_recipient = executor.start().recipient();
-    client_handler(client.clone(), executor_recipient).await.expect("failed to handle updates");
+    client_handler(client.clone(), executor_recipient)
+        .await
+        .expect("failed to handle updates");
 }

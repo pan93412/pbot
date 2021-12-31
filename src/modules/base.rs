@@ -2,8 +2,8 @@
 
 use std::sync::Arc;
 
-use actix::{Message, Handler, Recipient};
-use grammers_client::{Client, types};
+use actix::{Handler, Message, Recipient};
+use grammers_client::{types, Client};
 
 pub struct ActivatedModuleInfo {
     pub name: &'static str,
@@ -17,7 +17,7 @@ pub struct ModuleMessage {
     /// The [`Client`] instance.
     pub handle: Arc<Client>,
     /// The message received.
-    pub message: Arc<types::Message>
+    pub message: Arc<types::Message>,
 }
 
 /// The metadata that a PBot Module should have.
@@ -28,7 +28,9 @@ pub trait ModuleMeta {
 
 /// The module activator.
 pub trait ModuleActivator
-    where Self: Handler<ModuleMessage> {
+where
+    Self: Handler<ModuleMessage>,
+{
     /// Activate this module and get [`ActivatedModuleInfo`] including
     /// the module name and the recipient to this module.
     fn activate_module() -> ActivatedModuleInfo;

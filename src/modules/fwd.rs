@@ -3,7 +3,7 @@
 use actix::{Actor, Context, Handler};
 use log::info;
 
-use super::{base::{ModuleMessage, ModuleMeta, ActivatedModuleInfo, ModuleActivator}};
+use super::base::{ActivatedModuleInfo, ModuleActivator, ModuleMessage, ModuleMeta};
 
 /// The `!fwd` module.
 #[derive(Clone, Default)]
@@ -26,7 +26,15 @@ impl Handler<ModuleMessage> for FwdModuleActor {
 
     fn handle(&mut self, msg: ModuleMessage, _ctx: &mut Self::Context) -> Self::Result {
         let ModuleMessage { handle: _, message } = msg;
-        info!("recv: {} [id={}, sender={}]", message.text(), message.id(), message.sender().map(|c| c.name().to_string()).unwrap_or_else(|| "None".to_string()));
+        info!(
+            "recv: {} [id={}, sender={}]",
+            message.text(),
+            message.id(),
+            message
+                .sender()
+                .map(|c| c.name().to_string())
+                .unwrap_or_else(|| "None".to_string())
+        );
 
         Ok(())
     }
@@ -43,7 +51,7 @@ impl ModuleActivator for FwdModuleActor {
         let actor = Self::default();
         let name = actor.name();
         let addr = actor.start();
-        
+
         ActivatedModuleInfo {
             name,
             recipient: addr.recipient(),
