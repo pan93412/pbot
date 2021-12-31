@@ -1,12 +1,18 @@
 use actix::prelude::*;
 
 use dotenv::dotenv;
+use grammers_client::InputMessage;
+use log::info;
+use pbot::modules::getinfo::GetInfoModuleActor;
+use pbot::telegram::client::commands::SendMessageCommand;
 use simple_logger::SimpleLogger;
 
 use pbot::getenv;
 use pbot::SESSION_PATH;
 
 use log::error;
+use tokio_cron_scheduler::Job;
+use tokio_cron_scheduler::JobScheduler;
 use std::sync::Arc;
 
 use pbot::modules::{
@@ -65,6 +71,46 @@ async fn main() {
             .expect("failed to unpack the chat")
     });
 
+    let fwd_chat_y = Arc::new({
+        // Resolve the chat ID from the environment variable `TG_FWD_TO`.
+        //
+        // For details, see the implementation of Handler<ResolveChatCommand> in ClientActor.
+        let pack_chat = client
+            .send(ResolveChatCommand(1033293696))
+            .await
+            .unwrap()
+            .expect("failed to get the chat forward to");
+
+        // Unpack the Chat object from the PackedChat.
+        //
+        // For details, see the implementation of Handler<UnpackChatCommand> in ClientActor.
+        client
+            .send(UnpackChatCommand(pack_chat))
+            .await
+            .unwrap()
+            .expect("failed to unpack the chat")
+    });
+
+    let fwd_chat_r = Arc::new({
+        // Resolve the chat ID from the environment variable `TG_FWD_TO`.
+        //
+        // For details, see the implementation of Handler<ResolveChatCommand> in ClientActor.
+        let pack_chat = client
+            .send(ResolveChatCommand(1304992661))
+            .await
+            .unwrap()
+            .expect("failed to get the chat forward to");
+
+        // Unpack the Chat object from the PackedChat.
+        //
+        // For details, see the implementation of Handler<UnpackChatCommand> in ClientActor.
+        client
+            .send(UnpackChatCommand(pack_chat))
+            .await
+            .unwrap()
+            .expect("failed to unpack the chat")
+    });
+    
     // We initiate the FwdModule with the Chat object.
     let fwd_mod = 
         FwdModuleActor::activate_module(FwdModuleConfig {
@@ -74,9 +120,62 @@ async fn main() {
     /* Phase IV: Initiate ClientModuleExecutor */
     let executor = ClientModuleExecutor {
         client: client.clone(),
-        modules: Arc::new(vec![fwd_mod]),
+        modules: Arc::new(vec![fwd_mod, GetInfoModuleActor::activate_module(())]),
     }
     .start();
+
+    /* Phase V[2022]: Add scheduler */
+    let mut scheduler = JobScheduler::new();
+
+    {
+        info!("Adding scheduler: CuGroup");
+        let c = client.clone();
+        let ch = (*fwd_chat).clone();
+        scheduler.add(Job::new_async("30 01 * * * * *", move |uuid, _| {
+            let c = c.clone();
+            let ch = ch.clone();
+            Box::pin(async move {
+                let m = format!("🎉🎉🎉🎉 2022 新年快樂 🎉🎉🎉🎉🥳\n\n這是使用 PBot 發布的新年快報。本次的排定 UUID 為 {}。", uuid);
+                c.send(SendMessageCommand(ch, InputMessage::text(&m))).await.unwrap().unwrap();
+                info!("{}", &m);
+            })
+        }).unwrap()).unwrap();
+        info!("Scheduler added");
+    }
+
+    {
+        info!("Adding scheduler: YSITD");
+        let c = client.clone();
+        let ch = (*fwd_chat_y).clone();
+        scheduler.add(Job::new_async("30 01 * * * * *", move |uuid, _| {
+            let c = c.clone();
+            let ch = ch.clone();
+            Box::pin(async move {
+                let m = format!("🎉🎉🎉🎉 2022 新年快樂 🎉🎉🎉🎉🥳\n\n這是使用 PBot 發布的新年快報。本次的排定 UUID 為 {}。", uuid);
+                c.send(SendMessageCommand(ch, InputMessage::text(&m))).await.unwrap().unwrap();
+                info!("{}", &m);
+            })
+        }).unwrap()).unwrap();
+        info!("Scheduler added");
+    }
+
+    {
+        info!("Adding scheduler: Rust");
+        let c = client.clone();
+        let ch = (*fwd_chat_r).clone();
+        scheduler.add(Job::new_async("30 01 * * * * *", move |uuid, _| {
+            let c = c.clone();
+            let ch = ch.clone();
+            Box::pin(async move {
+                let m = format!("🎉🎉🎉🎉 2022 新年快樂 🎉🎉🎉🎉🥳\n\n這是使用 PBot 發布的新年快報。本次的排定 UUID 為 {}。", uuid);
+                c.send(SendMessageCommand(ch, InputMessage::text(&m))).await.unwrap().unwrap();
+                info!("{}", &m);
+            })
+        }).unwrap()).unwrap();
+        info!("Scheduler added");
+    }
+
+    scheduler.start().await.unwrap();
 
     /* Phase V: Polling updates */
     while let Some(updates) = tokio::select! {
