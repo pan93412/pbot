@@ -1,4 +1,6 @@
-//! PBot: Utils
+//! PBot: Utilities
+//! 
+//! This module contains some useful utilities, such as [`getenv`].
 
 /// Get the environment value.
 #[macro_export]

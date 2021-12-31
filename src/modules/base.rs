@@ -1,18 +1,25 @@
-//! PBot: Modules: Base Structure.
+//! PBot: Modules: Base Structure and Traits
+//! 
+//! The base structure and traits of the PBot modules.
 
 use std::sync::Arc;
 
 use actix::{Addr, Handler, Message, Recipient};
-use grammers_client::types;
 
+use grammers_client::types;
 use crate::telegram::client::ClientActor;
 
+/// The information of the module which has been initiated and activated.
 pub struct ActivatedModuleInfo {
+    /// The name of this module.
     pub name: &'static str,
+    /// The module recipient.
+    /// 
+    /// It'll be used by [`crate::telegram::update::ClientModuleExecutor`].
     pub recipient: Recipient<ModuleMessage>,
 }
 
-/// The message that a PBot Module should receive.
+/// The message that a PBot Module would receive.
 #[derive(Message)]
 #[rtype(result = "anyhow::Result<()>")]
 pub struct ModuleMessage {
@@ -33,6 +40,10 @@ pub trait ModuleActivator
 where
     Self: Handler<ModuleMessage>,
 {
+    /// The configuration structure that'll pass to activate_module
+    /// 
+    /// You can receive this structure in [`Self::activate_module`]
+    /// for initizating your module.
     type Config;
 
     /// Activate this module and get [`ActivatedModuleInfo`] including
