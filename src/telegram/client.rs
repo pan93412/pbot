@@ -18,7 +18,7 @@ use grammers_client::{
 
 use self::commands::{
     ForwardSingleMessageCommand, LoginCommand, NextUpdatesCommand, ResolveChatCommand,
-    UnpackChatCommand,
+    UnpackChatCommand, SendMessageCommand,
 };
 
 use super::user::login;
@@ -179,6 +179,26 @@ impl Handler<NextUpdatesCommand> for ClientActor {
 
             // Get the next round of updates.
             client.next_updates().await
+        }
+        .into_actor(self)
+        .boxed_local()
+    }
+}
+
+impl Handler<SendMessageCommand> for ClientActor {
+    type Result = ResponseActFuture<Self, Result<grammers_client::types::Message, InvocationError>>;
+
+    /// Send message to the specified Chat.
+    fn handle(&mut self, cmd: SendMessageCommand, _: &mut Context<Self>) -> Self::Result {
+        let client = self.get_client();
+        let SendMessageCommand(chat, message) = cmd;
+
+        async move {
+            // Obtain the lock of client.
+            let mut client = client.lock().unwrap();
+
+            // Send message.
+            client.send_message(&chat, message).await
         }
         .into_actor(self)
         .boxed_local()

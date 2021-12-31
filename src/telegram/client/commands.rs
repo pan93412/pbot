@@ -6,7 +6,7 @@ use super::super::user::LoginConfig;
 use actix::prelude::*;
 use grammers_client::types::iter_buffer::InvocationError;
 use grammers_client::types::{chat::PackedChat, Chat};
-use grammers_client::UpdateIter;
+use grammers_client::{UpdateIter, InputMessage};
 
 /// Logging in to Telegram.
 #[derive(Message)]
@@ -35,12 +35,12 @@ pub struct ResolveChatCommand(pub i32);
 #[rtype(result = "Result<Chat, InvocationError>")]
 pub struct UnpackChatCommand(pub PackedChat);
 
-/// Add the module into.
-#[derive(Message)]
-#[rtype(result = "Result<Chat, InvocationError>")]
-pub struct SetClientCommand(pub PackedChat);
-
 /// Get the next updates.
 #[derive(Message)]
 #[rtype(result = "Result<Option<UpdateIter>, InvocationError>")]
 pub struct NextUpdatesCommand;
+
+/// Send message to the specified Chat.
+#[derive(Message)]
+#[rtype(result = "Result<grammers_client::types::Message, InvocationError>")]
+pub struct SendMessageCommand(pub Chat, pub InputMessage);
