@@ -1,7 +1,8 @@
 mod modules;
 mod telegram;
+mod utils;
 
-use std::{env, sync::Arc};
+use std::sync::Arc;
 
 use actix::Actor;
 use dotenv::dotenv;
@@ -15,17 +16,6 @@ use telegram::{
 use crate::telegram::update::ClientModuleExecutor;
 
 const SESSION_PATH: &str = "./.telegram.session.dat";
-
-macro_rules! getenv {
-    ($envvar:expr) => {
-        env::var($envvar).expect(concat!("should specify `", $envvar, "` in .env file"))
-    };
-    ($envvar:expr, $type:ty) => {
-        getenv!($envvar)
-            .parse::<$type>()
-            .expect(concat!($envvar, " should be ", stringify!($type)))
-    };
-}
 
 #[actix::main]
 async fn main() {

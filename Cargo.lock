@@ -701,6 +701,7 @@ dependencies = [
  "dotenv",
  "grammers-client",
  "grammers-session",
+ "grammers-tl-types",
  "log",
  "rpassword",
  "simple_logger",
