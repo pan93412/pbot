@@ -1,12 +1,15 @@
 mod telegram;
 mod modules;
 
-use std::env;
+use std::{env, sync::Arc};
 
+use actix::Actor;
 use dotenv::dotenv;
-use modules::enabled_modules;
+use modules::{enabled_modules};
 use simple_logger::SimpleLogger;
 use telegram::{user::{LoginConfig, login}, update::client_handler};
+
+use crate::telegram::update::ClientModuleExecutor;
 
 const SESSION_PATH: &str = "./telegram.session.dat";
 
@@ -21,7 +24,7 @@ macro_rules! getenv {
     };
 }
 
-#[tokio::main]
+#[actix::main]
 async fn main() {
     SimpleLogger::new().init().expect("failed to configure logger");
     dotenv().expect("a .env file should be existed in the current working directory");
@@ -33,6 +36,14 @@ async fn main() {
         session_path: SESSION_PATH
     };
 
-    let client = login(login_config).await.expect("failed to login");
-    client_handler(client, enabled_modules()).await.expect("failed to handle updates");
+    let client = Arc::new(login(login_config).await.expect("failed to login"));
+    let modules = enabled_modules().into_iter().map(|module| (module.name, module.recipient)).collect();
+
+    let executor = ClientModuleExecutor {
+        client: client.clone(),
+        modules,
+    };
+
+    let executor_recipient = executor.start().recipient();
+    client_handler(client.clone(), executor_recipient).await.expect("failed to handle updates");
 }

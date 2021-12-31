@@ -1,26 +1,52 @@
 //! PBot: Modules: `!fwd`
 
-use grammers_client::{Client, types::Message};
+use actix::{Actor, Context, Handler};
 use log::info;
 
-use super::base::Module;
+use super::{base::{ModuleMessage, ModuleMeta, ActivatedModuleInfo, ModuleActivator}};
 
+/// The `!fwd` module.
 #[derive(Clone, Default)]
-pub struct FwdModule;
+pub struct FwdModuleActor;
 
-#[async_trait::async_trait]
-impl Module for FwdModule {
-    fn name(&self) -> &'static str {
-        "fwd_module"
+impl Actor for FwdModuleActor {
+    type Context = Context<Self>;
+
+    fn started(&mut self, ctx: &mut Self::Context) {
+        info!("🌟 FwdModuleActor (!fwd) started!");
     }
 
-    async fn handle_updates(self, handle: Client, message: Message) -> anyhow::Result<()> {
-        handle_updates(handle, message).await
+    fn stopped(&mut self, ctx: &mut Self::Context) {
+        info!("👋 FwdModuleActor (!fwd) stopped!");
     }
 }
 
-async fn handle_updates(handle: Client, message: Message) -> anyhow::Result<()> {
-    info!("recv: {} [id={}, sender={}]", message.text(), message.id(), message.sender().map(|c| c.name().to_string()).unwrap_or_else(|| "None".to_string()));
+impl Handler<ModuleMessage> for FwdModuleActor {
+    type Result = anyhow::Result<()>;
 
-    Ok(())
+    fn handle(&mut self, msg: ModuleMessage, _ctx: &mut Self::Context) -> Self::Result {
+        let ModuleMessage { handle: _, message } = msg;
+        info!("recv: {} [id={}, sender={}]", message.text(), message.id(), message.sender().map(|c| c.name().to_string()).unwrap_or_else(|| "None".to_string()));
+
+        Ok(())
+    }
+}
+
+impl ModuleMeta for FwdModuleActor {
+    fn name(&self) -> &'static str {
+        "FwdModule (!fwd)"
+    }
+}
+
+impl ModuleActivator for FwdModuleActor {
+    fn activate_module() -> ActivatedModuleInfo<Self> {
+        let actor = Self::default();
+        let addr = actor.start();
+        
+        ActivatedModuleInfo {
+            name: actor.name(),
+            actor,
+            recipient: addr.recipient(),
+        }
+    }
 }

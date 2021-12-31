@@ -1,10 +1,14 @@
+use actix::{Handler, Actor};
+
+use crate::modules::base::ModuleActivator;
+
+use self::base::{ModuleMessage, ActivatedModuleInfo};
+
 pub mod base;
 pub mod fwd;
 
-use self::base::Module;
-
-pub fn enabled_modules() -> Vec<impl Module + Clone + Send> {
+pub fn enabled_modules() -> Vec<ActivatedModuleInfo<impl 'static + Actor + Handler<ModuleMessage>>> {
     vec![
-        fwd::FwdModule::default(),
+        fwd::FwdModuleActor::activate_module()
     ]
 }
