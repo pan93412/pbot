@@ -9,15 +9,15 @@ use log::{debug, info};
 pub struct LoginConfig {
     /// Developer's API ID, required to interact with the Telegram's API.
     ///
-    /// You may obtain your own in https://my.telegram.org/auth.
+    /// You may obtain your own in <https://my.telegram.org/auth>.
     pub api_id: usize,
     /// Developer's API hash, required to interact with Telegram's API.
     ///
-    /// You may obtain your own in https://my.telegram.org/auth.
+    /// You may obtain your own in <https://my.telegram.org/auth>.
     pub api_hash: String,
     /// Your mobile number.
     ///
-    /// For [`grammers_client::client::auth::Client::request_login_code`]
+    /// For `grammers_client::client::auth::Client::request_login_code`
     pub mobile_number: String,
     /// The path to the session storing the login information.
     pub session_path: &'static str,
