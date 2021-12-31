@@ -19,7 +19,7 @@ use self::commands::{
 
 use super::user::login;
 
-use log::info;
+use log::{info, debug};
 
 /// The Telegram client actor.
 #[derive(Default)]
@@ -98,6 +98,7 @@ impl Handler<ResolveChatCommand> for ClientActor {
 
             while let Some(dialog) = client.iter_dialogs().next().await? {
                 let chat = dialog.chat();
+                debug!("comparing: {:#?}", chat);
                 if chat.id() == msg.0 {
                     let packed_chat = chat.pack();
                     return Ok(packed_chat);
