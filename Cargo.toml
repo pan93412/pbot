@@ -1,0 +1,18 @@
+[package]
+name = "pbot"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.52"
+async-trait = "0.1.52"
+dotenv = "0.15.0"
+grammers-client = "0.3.0"
+grammers-session = "0.3.0"
+log = "0.4.14"
+simple_logger = "1.16.0"
+tokio = { version = "1.15.0", features = ["full"] }
+
+[features]
