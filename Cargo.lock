@@ -693,7 +693,7 @@ dependencies = [
 
 [[package]]
 name = "pbot"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "actix",
  "anyhow",
@@ -701,7 +701,6 @@ dependencies = [
  "dotenv",
  "grammers-client",
  "grammers-session",
- "grammers-tl-types",
  "log",
  "rpassword",
  "simple_logger",
