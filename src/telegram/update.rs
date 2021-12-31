@@ -54,12 +54,14 @@ impl Handler<ClientModuleMessage> for ClientModuleExecutor {
 
             for module in modules.iter() {
                 let recipient = module.recipient.clone();
-    
-                let recv = recipient.send(ModuleMessage {
-                    handle: handle.clone(),
-                    message: message.clone()
-                }).await?;
-    
+
+                let recv = recipient
+                    .send(ModuleMessage {
+                        handle: handle.clone(),
+                        message: message.clone(),
+                    })
+                    .await?;
+
                 if let Err(e) = recv {
                     error!("failed to broadcast message to {}: {:?}", module.name, e);
                 }
@@ -67,7 +69,7 @@ impl Handler<ClientModuleMessage> for ClientModuleExecutor {
 
             Ok(())
         }
-            .into_actor(self)
-            .boxed_local()
+        .into_actor(self)
+        .boxed_local()
     }
 }

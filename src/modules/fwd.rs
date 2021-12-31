@@ -2,10 +2,7 @@
 
 use std::sync::Arc;
 
-use actix::{
-    fut::WrapFuture, Actor, ActorFutureExt, Context, Handler,
-    ResponseActFuture,
-};
+use actix::{fut::WrapFuture, Actor, ActorFutureExt, Context, Handler, ResponseActFuture};
 use grammers_client::{types::Chat, InputMessage};
 use log::{error, info, warn};
 
@@ -62,8 +59,13 @@ impl Handler<ModuleMessage> for FwdModuleActor {
                     match forward_result {
                         Ok(_) => {
                             info!("💬 Message forwarded!");
-                            (*message).clone().edit(InputMessage::text("[PBOT] 💬 訊息已轉錄至個人群組。若要撤下請回覆告知。")).await?;
-                        },
+                            (*message)
+                                .clone()
+                                .edit(InputMessage::text(
+                                    "[PBOT] 💬 訊息已轉錄至個人群組。若要撤下請回覆告知。",
+                                ))
+                                .await?;
+                        }
                         Err(e) => error!("Failed to forward message: {:?}", e),
                     }
                 } else {

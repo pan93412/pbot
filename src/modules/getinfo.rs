@@ -27,7 +27,12 @@ impl Handler<ModuleMessage> for GetInfoModuleActor {
     fn handle(&mut self, msg: ModuleMessage, _: &mut Self::Context) -> Self::Result {
         let ModuleMessage { handle: _, message } = msg;
 
-        info!("MSG={:#?}; BY={:#?}; CHAT_ID={:#?}", message.text(), message.sender(), message.chat());
+        info!(
+            "MSG={:#?}; BY={:#?}; CHAT_ID={:#?}",
+            message.text(),
+            message.sender(),
+            message.chat()
+        );
         Ok(())
     }
 }
@@ -38,7 +43,7 @@ impl ModuleMeta for GetInfoModuleActor {
     }
 }
 
-impl ModuleActivator for GetInfoModuleActor  {
+impl ModuleActivator for GetInfoModuleActor {
     type Config = ();
 
     fn activate_module(_: Self::Config) -> ActivatedModuleInfo {

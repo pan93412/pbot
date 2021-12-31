@@ -19,7 +19,7 @@ use self::commands::{
 
 use super::user::login;
 
-use log::{info, debug};
+use log::{debug, info};
 
 /// The Telegram client actor.
 #[derive(Default)]

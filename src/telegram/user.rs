@@ -1,5 +1,5 @@
-use grammers_client::{types::{Message}, Client, Config, SignInError};
 use grammers_client::types::Chat::User;
+use grammers_client::{types::Message, Client, Config, SignInError};
 use grammers_session::Session;
 use log::{debug, info};
 
@@ -80,11 +80,8 @@ pub async fn login(conf: LoginConfig) -> anyhow::Result<Client> {
 }
 
 pub fn is_root_user(message: &Message) -> bool {
-    message.sender().map(|c| {
-        if let User(u) = c {
-            u.is_self()
-        } else {
-            false
-        }
-    }).unwrap_or(false)
+    message
+        .sender()
+        .map(|c| if let User(u) = c { u.is_self() } else { false })
+        .unwrap_or(false)
 }
