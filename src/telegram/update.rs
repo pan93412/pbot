@@ -1,16 +1,23 @@
-use std::sync::Arc;
+//! PBot: Telegram: The client module executors.
 
 use actix::prelude::*;
 
+use std::sync::Arc;
+use log::{error, info};
+
+use super::client::ClientActor;
+
 use grammers_client::Update::NewMessage;
-use log::{debug, error, info};
 
 use crate::modules::base::{ActivatedModuleInfo, ModuleMessage};
 
-use super::client::ClientActor;
+/// The message for a ClientModule.
+/// 
+/// See main.rs > Phase V: Polling updates
 #[derive(Message)]
 #[rtype(result = "anyhow::Result<()>")]
 pub struct ClientModuleMessage {
+    /// The update event. See main.rs > Phase V: Polling updates
     pub update: grammers_client::Update,
 }
 
@@ -41,6 +48,8 @@ impl Handler<ClientModuleMessage> for ClientModuleExecutor {
     type Result = ResponseActFuture<Self, anyhow::Result<()>>;
 
     fn handle(&mut self, msg: ClientModuleMessage, _ctx: &mut Self::Context) -> Self::Result {
+        // https://github.com/actix/actix/issues/308
+        // We clone the variables from self to workaround this error.
         let modules = self.modules.clone();
         let handle = self.client.clone();
         let message = match msg.update {
@@ -49,19 +58,25 @@ impl Handler<ClientModuleMessage> for ClientModuleExecutor {
         };
 
         async move {
-            debug!("ClientModuleExector: start processing ClientModuleMessage");
+            // Make a Arc smart pointer to the message
+            // so we can share it with those modules.
             let message = Arc::new(message?);
 
+            // Iterate over all modules.
             for module in modules.iter() {
-                let recipient = module.recipient.clone();
-
-                let recv = recipient
+                // Forward our handle and message to the module.
+                //
+                // Note that we clone() twice - first to workaround the lifetime issue,
+                // this to let the every modules consume.
+                let recv = module.recipient
                     .send(ModuleMessage {
                         handle: handle.clone(),
                         message: message.clone(),
                     })
                     .await?;
 
+                // module.name is the module name;
+                // e is the error from module.recipient.send().
                 if let Err(e) = recv {
                     error!("failed to broadcast message to {}: {:?}", module.name, e);
                 }
