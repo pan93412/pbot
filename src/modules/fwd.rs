@@ -2,8 +2,11 @@
 
 use std::sync::Arc;
 
-use actix::{fut::WrapFuture, Actor, Context, ContextFutureSpawner, Handler};
-use grammers_client::types::Chat;
+use actix::{
+    fut::WrapFuture, Actor, ActorFutureExt, Context, Handler,
+    ResponseActFuture,
+};
+use grammers_client::{types::Chat, InputMessage};
 use log::{error, info, warn};
 
 use crate::telegram::{client::commands::ForwardSingleMessageCommand, user::is_root_user};
@@ -34,42 +37,42 @@ impl Actor for FwdModuleActor {
 }
 
 impl Handler<ModuleMessage> for FwdModuleActor {
-    type Result = anyhow::Result<()>;
+    type Result = ResponseActFuture<Self, anyhow::Result<()>>;
 
-    fn handle(&mut self, msg: ModuleMessage, ctx: &mut Self::Context) -> Self::Result {
-        let ModuleMessage { handle, message } = msg;
+    fn handle(&mut self, msg: ModuleMessage, _: &mut Self::Context) -> Self::Result {
+        let target = self.target.clone();
+        async move {
+            let ModuleMessage { handle, message } = msg;
 
-        if message.text() == "!cufwd" && is_root_user(&*message) {
-            let reply_message_id = message.reply_to_message_id();
-            let reply_message_src = Arc::new(message.chat());
+            if message.text() == "!cufwd" && is_root_user(&message) {
+                let reply_message_id = message.reply_to_message_id();
+                let reply_message_src = Arc::new(message.chat());
 
-            if let Some(reply_message_id) = reply_message_id {
-                let target = self.target.clone();
-                async move {
-                    let client_result = handle
+                if let Some(reply_message_id) = reply_message_id {
+                    let forward_result = handle
                         .send(ForwardSingleMessageCommand {
                             forward_to: target,
                             message_id: reply_message_id,
                             message_chat: reply_message_src,
                         })
-                        .await;
-                    match client_result {
-                        Ok(forward_result) => match forward_result {
-                            Ok(_) => info!("💬 Message forwarded!"),
-                            Err(e) => error!("Failed to forward message: {:?}", e),
+                        .await?;
+
+                    match forward_result {
+                        Ok(_) => {
+                            info!("💬 Message forwarded!");
+                            (*message).clone().edit(InputMessage::text("[PBOT] 💬 訊息已轉錄至個人群組。若要撤下請回覆告知。")).await?;
                         },
-                        Err(e) => {
-                            error!("Failed to request client to forward message: {:?}", e);
-                        }
-                    };
+                        Err(e) => error!("Failed to forward message: {:?}", e),
+                    }
                 }
-                .into_actor(self)
-                .spawn(ctx)
             } else {
                 warn!("!cufwd: no reply message found");
             }
+
+            Ok(())
         }
-        Ok(())
+        .into_actor(self)
+        .boxed_local()
     }
 }
 

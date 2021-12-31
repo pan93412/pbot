@@ -10,7 +10,7 @@ use dotenv::dotenv;
 use log::error;
 use modules::{
     base::ModuleActivator,
-    fwd::{FwdModuleActor, FwdModuleConfig}, getinfo::GetInfoModuleActor,
+    fwd::{FwdModuleActor, FwdModuleConfig},
 };
 use simple_logger::SimpleLogger;
 use telegram::{
