@@ -1,3 +1,4 @@
+#[warn(missing_docs)]
 mod modules;
 mod telegram;
 mod utils;
@@ -6,14 +7,14 @@ use std::sync::Arc;
 
 use actix::Actor;
 use dotenv::dotenv;
-use modules::{fwd::{FwdModuleActor, FwdModuleConfig}, base::ModuleActivator};
+use log::error;
+use modules::{fwd::{FwdModuleActor, FwdModuleConfig}, base::{ModuleActivator}};
 use simple_logger::SimpleLogger;
 use telegram::{
-    update::client_handler,
-    user::{login, LoginConfig}, chat::resolve_chat,
+    user::{LoginConfig}, client::{ClientActor, commands::{LoginCommand, ResolveChatCommand, UnpackChatCommand}}, update::{ClientModuleExecutor, ClientModuleMessage},
 };
 
-use crate::telegram::update::ClientModuleExecutor;
+use crate::telegram::client::commands::NextUpdatesCommand;
 
 const SESSION_PATH: &str = "./.telegram.session.dat";
 
@@ -26,29 +27,42 @@ async fn main() {
         .expect("failed to configure logger");
     dotenv().expect("a .env file should be existed in the current working directory");
 
-    let login_config = LoginConfig {
+    let client = ClientActor::default().start();
+    client.send(LoginCommand(LoginConfig {
         api_id: getenv!("TG_ID", usize),
         api_hash: getenv!("TG_HASH"),
         mobile_number: getenv!("TG_MOBILE_NUMBER"),
         session_path: SESSION_PATH,
+    })).await.expect("failed to login");
+
+    let fwd_mod = {
+        let pack_chat = client.send(
+            ResolveChatCommand(getenv!("TG_FWD_TO", i32))
+        ).await.unwrap().expect("failed to get the chat forward to");   
+        let fwd_chat = client.send(
+            UnpackChatCommand(pack_chat)
+        ).await.unwrap().expect("failed to unpack the chat");
+
+        FwdModuleActor::activate_module(FwdModuleConfig {
+            target: Arc::new(fwd_chat)
+        })
     };
-
-    let mut client = login(login_config).await.expect("failed to login");
-
-    let fwd_chat = client.unpack_chat(&resolve_chat(&client, getenv!("TG_FWD_TO", i32)).await.expect("failed to get the chat forward to")).await.expect("failed to unpack the chat");
-    let fwd_mod = FwdModuleActor::activate_module(FwdModuleConfig {
-        target: Arc::new(fwd_chat)
-    });
-
-    let client = Arc::new(client);
 
     let executor = ClientModuleExecutor {
         client: client.clone(),
         modules: vec![fwd_mod]
-    };
+    }.start();
 
-    let executor_recipient = executor.start().recipient();
-    client_handler(&client, executor_recipient)
-        .await
-        .expect("failed to handle updates");
+    while let Some(updates) = tokio::select! {
+        _ = tokio::signal::ctrl_c() => Ok(Ok(None)),
+        result = client.send(NextUpdatesCommand) => result,
+    }.unwrap().expect("failed to retrieve updates") {
+        for update in updates {
+            let result = executor.send(ClientModuleMessage { update }).await.expect("Mailbox is full.");
+
+            if let Err(e) = result {
+                error!("error in exectutors: {:?}", e);
+            }
+        }
+    }
 }

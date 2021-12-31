@@ -2,8 +2,10 @@
 
 use std::sync::Arc;
 
-use actix::{Handler, Message, Recipient};
-use grammers_client::{types, Client};
+use actix::{Handler, Message, Recipient, Addr};
+use grammers_client::{types};
+
+use crate::telegram::client::ClientActor;
 
 pub struct ActivatedModuleInfo {
     pub name: &'static str,
@@ -14,8 +16,8 @@ pub struct ActivatedModuleInfo {
 #[derive(Message)]
 #[rtype(result = "anyhow::Result<()>")]
 pub struct ModuleMessage {
-    /// The [`Client`] instance.
-    pub handle: Arc<Client>,
+    /// The address to a [`ClientActor`] instance.
+    pub handle: Addr<ClientActor>,
     /// The message received.
     pub message: Arc<types::Message>,
 }

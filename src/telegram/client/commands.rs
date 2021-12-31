@@ -1,0 +1,46 @@
+//! Commands for the client actor.
+
+use std::sync::Arc;
+
+use actix::prelude::*;
+use grammers_client::types::{Chat, chat::PackedChat};
+use grammers_client::types::iter_buffer::InvocationError;
+use grammers_client::UpdateIter;
+use super::super::user::LoginConfig;
+
+/// Logging in to Telegram.
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct LoginCommand(pub LoginConfig);
+
+/// Forward a single message to the specified chat.
+#[derive(Message)]
+#[rtype(result = "Result<Vec<Option<grammers_client::types::Message>>, InvocationError>")]
+pub struct ForwardSingleMessageCommand {
+    /// The chat to forward to.
+    pub forward_to: Arc<Chat>,
+    /// The message to forward.
+    pub message_id: i32,
+    /// The chat which the message was sent in.
+    pub message_chat: Arc<Chat>,
+}
+
+/// Resolve the chat according to the specified chat_id.
+#[derive(Message)]
+#[rtype(result = "anyhow::Result<PackedChat>")]
+pub struct ResolveChatCommand(pub i32);
+
+/// Resolve the chat according to the specified chat_id.
+#[derive(Message)]
+#[rtype(result = "Result<Chat, InvocationError>")]
+pub struct UnpackChatCommand(pub PackedChat);
+
+/// Add the module into.
+#[derive(Message)]
+#[rtype(result = "Result<Chat, InvocationError>")]
+pub struct SetClientCommand(pub PackedChat);
+
+/// Get the next updates.
+#[derive(Message)]
+#[rtype(result = "Result<Option<UpdateIter>, InvocationError>")]
+pub struct NextUpdatesCommand;

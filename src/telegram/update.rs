@@ -1,12 +1,14 @@
 use core::fmt;
 use std::sync::Arc;
 
-use actix::{Actor, Context, Handler, Message, Recipient};
-use grammers_client::Client;
+use actix::{Actor, Context, Handler, Message, Addr};
+
 use grammers_client::Update::NewMessage;
 use log::{debug, error, info};
 
 use crate::modules::base::{ActivatedModuleInfo, ModuleMessage};
+
+use super::client::ClientActor;
 #[derive(Message)]
 #[rtype(result = "anyhow::Result<()>")]
 pub struct ClientModuleMessage {
@@ -16,7 +18,7 @@ pub struct ClientModuleMessage {
 /// The executor that will distribute messages to modules..
 pub struct ClientModuleExecutor {
     /// The client that will be used to handle updates.
-    pub client: Arc<Client>,
+    pub client: Addr<ClientActor>,
     /// The modules that will be executed.
     ///
     /// The first element is the module name;
@@ -70,26 +72,3 @@ impl fmt::Display for UnhandledMessage {
     }
 }
 impl std::error::Error for UnhandledMessage {}
-
-/// The root handler of client.
-///
-/// It includes the Ctrl-C handler.
-pub async fn client_handler(
-    client: &Client,
-    executors: Recipient<ClientModuleMessage>,
-) -> anyhow::Result<()> {
-    while let Some(updates) = tokio::select! {
-        _ = tokio::signal::ctrl_c() => Ok(None),
-        result = client.next_updates() => result,
-    }? {
-        for update in updates {
-            let result = executors.send(ClientModuleMessage { update }).await?;
-
-            if let Err(e) = result {
-                error!("client_handler(): error in exectutors: {:?}", e);
-            }
-        }
-    }
-
-    Ok(())
-}
