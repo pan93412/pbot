@@ -95,8 +95,9 @@ impl Handler<ResolveChatCommand> for ClientActor {
 
         async move {
             let client = client.lock().unwrap();
+            let mut dialogs = client.iter_dialogs();
 
-            while let Some(dialog) = client.iter_dialogs().next().await? {
+            while let Some(dialog) = dialogs.next().await? {
                 let chat = dialog.chat();
                 debug!("comparing: {:#?}", chat);
                 if chat.id() == msg.0 {
