@@ -13,6 +13,8 @@ use crate::telegram::{client::commands::ForwardSingleMessageCommand, user::is_ro
 
 use super::base::{ActivatedModuleInfo, ModuleActivator, ModuleMessage, ModuleMeta};
 
+const CMD: &str = "!cufwd";
+
 /// The `!fwd` module.
 #[derive(Clone)]
 pub struct FwdModuleActor {
@@ -28,11 +30,11 @@ impl Actor for FwdModuleActor {
     type Context = Context<Self>;
 
     fn started(&mut self, _: &mut Self::Context) {
-        info!("🌟 FwdModuleActor (!fwd) started!");
+        info!("🌟 {} ({}) started!", self.name(), CMD);
     }
 
     fn stopped(&mut self, _: &mut Self::Context) {
-        info!("👋 FwdModuleActor (!fwd) stopped!");
+        info!("👋 {} ({}) stopped!", self.name(), CMD);
     }
 }
 
@@ -78,7 +80,7 @@ impl Handler<ModuleMessage> for FwdModuleActor {
 
 impl ModuleMeta for FwdModuleActor {
     fn name(&self) -> &'static str {
-        "FwdModule (!fwd)"
+        "FwdModule"
     }
 }
 
