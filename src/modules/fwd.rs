@@ -12,11 +12,11 @@ pub struct FwdModuleActor;
 impl Actor for FwdModuleActor {
     type Context = Context<Self>;
 
-    fn started(&mut self, ctx: &mut Self::Context) {
+    fn started(&mut self, _: &mut Self::Context) {
         info!("🌟 FwdModuleActor (!fwd) started!");
     }
 
-    fn stopped(&mut self, ctx: &mut Self::Context) {
+    fn stopped(&mut self, _: &mut Self::Context) {
         info!("👋 FwdModuleActor (!fwd) stopped!");
     }
 }
@@ -39,13 +39,13 @@ impl ModuleMeta for FwdModuleActor {
 }
 
 impl ModuleActivator for FwdModuleActor {
-    fn activate_module() -> ActivatedModuleInfo<Self> {
+    fn activate_module() -> ActivatedModuleInfo {
         let actor = Self::default();
+        let name = actor.name();
         let addr = actor.start();
         
         ActivatedModuleInfo {
-            name: actor.name(),
-            actor,
+            name,
             recipient: addr.recipient(),
         }
     }

@@ -6,7 +6,7 @@ use grammers_client::Client;
 use grammers_client::Update::NewMessage;
 use log::{error, debug, info};
 
-use crate::modules::base::{ModuleMessage};
+use crate::modules::base::{ModuleMessage, ActivatedModuleInfo};
 #[derive(Message)]
 #[rtype(result = "anyhow::Result<()>")]
 pub struct ClientModuleMessage {
@@ -21,7 +21,7 @@ pub struct ClientModuleExecutor {
     ///
     /// The first element is the module name;
     /// the second element is the recipient of [`ModuleMessage`].
-    pub modules: Vec<(&'static str, Recipient<ModuleMessage>)>,
+    pub modules: Vec<ActivatedModuleInfo>,
 }
 
 impl Actor for ClientModuleExecutor {
@@ -39,7 +39,7 @@ impl Actor for ClientModuleExecutor {
 impl Handler<ClientModuleMessage> for ClientModuleExecutor {
     type Result = anyhow::Result<()>;
 
-    fn handle(&mut self, msg: ClientModuleMessage, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: ClientModuleMessage, _: &mut Self::Context) -> Self::Result {
         debug!("ClientModuleExector: start processing ClientModuleMessage");
         let message = match &msg.update {
             NewMessage(message) => Ok(Arc::new(message.clone())),
@@ -50,14 +50,13 @@ impl Handler<ClientModuleMessage> for ClientModuleExecutor {
             let handle = self.client.clone();
             let message = message.clone();
 
-            let (module_name, addr) = module;
-            let recv = addr.try_send(ModuleMessage {
+            let recv = module.recipient.try_send(ModuleMessage {
                 handle,
                 message,
             });
 
             if let Err(e) = recv {
-                error!("failed to broadcast message to {}: {:?}", module_name, e);
+                error!("failed to broadcast message to {}: {:?}", module.name, e);
             }
         }
 

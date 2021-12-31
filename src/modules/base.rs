@@ -2,12 +2,11 @@
 
 use std::sync::Arc;
 
-use actix::{Message, Actor, Handler, Recipient};
+use actix::{Message, Handler, Recipient};
 use grammers_client::{Client, types};
 
-pub struct ActivatedModuleInfo<A: Actor + Handler<ModuleMessage>> {
+pub struct ActivatedModuleInfo {
     pub name: &'static str,
-    pub actor: A,
     pub recipient: Recipient<ModuleMessage>,
 }
 
@@ -30,7 +29,7 @@ pub trait ModuleMeta {
 /// The module activator.
 pub trait ModuleActivator
     where Self: Handler<ModuleMessage> {
-    /// Activate this module and get [`ActivatedModuleInfo`] with
-    /// the module name, actor instance and the actor address included.
-    fn activate_module() -> ActivatedModuleInfo<Self>;
+    /// Activate this module and get [`ActivatedModuleInfo`] including
+    /// the module name and the recipient to this module.
+    fn activate_module() -> ActivatedModuleInfo;
 }

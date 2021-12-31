@@ -37,11 +37,10 @@ async fn main() {
     };
 
     let client = Arc::new(login(login_config).await.expect("failed to login"));
-    let modules = enabled_modules().into_iter().map(|module| (module.name, module.recipient)).collect();
 
     let executor = ClientModuleExecutor {
         client: client.clone(),
-        modules,
+        modules: enabled_modules(),
     };
 
     let executor_recipient = executor.start().recipient();
