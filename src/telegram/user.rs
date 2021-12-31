@@ -1,6 +1,4 @@
-use std::io;
-
-use grammers_client::{Client, Config};
+use grammers_client::{Client, Config, SignInError};
 use grammers_session::Session;
 use log::{debug, info};
 
@@ -35,12 +33,30 @@ pub async fn login(conf: LoginConfig) -> anyhow::Result<Client> {
 
         /* Phase 2-2: Prompt user to input their login code  */
         info!("user::login(): ⭐️ You would have gotten a login code. Copy that into here, then press Enter! ❤️");
-        let mut login_code = String::new();
-        io::stdin().read_line(&mut login_code)?;
+        let login_code = rpassword::prompt_password_stderr("Login Code: ").unwrap();
 
         /* Phase 2-3: Authorize with the login code */
-        info!("user::login(): ❤️ Perfect! Now authorizing with the login code...");
-        client.sign_in(&token, &login_code).await?;
+        info!("user::login(): ❤️  Perfect! Now authorizing with the login code...");
+        let status = client.sign_in(&token, &login_code).await;
+
+        /* Phase 2-4: Check if the authorization is successful */
+        match status {
+            Err(SignInError::PasswordRequired(password_token)) => {
+                /* Phase 2-4-1 [PwdRequried]: Let user input their password. */
+                info!("user::login(): ⚠️  You need to enter your password to authorize. Type your password to here, then press Enter!");
+                info!("user::login(): hint: {}", password_token.hint().map(|v| v.as_str()).unwrap_or_else(|| "None"));
+
+                let password = rpassword::prompt_password_stderr("Password: ").unwrap();
+
+                info!("user::login(): 😶 Checking password...");
+                client.check_password(password_token, password.trim()).await.expect("error singing in (2FA)");
+            },
+            Err(e) => {
+                panic!("error signing in: {:?}", e);
+            }
+            _ => {},
+        };
+
         info!("user::login(): ✅ Authorized successfully!");
 
         /* Phase 3: Store this loggin session. */
