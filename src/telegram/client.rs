@@ -49,17 +49,16 @@ impl Actor for ClientActor {
 }
 
 impl Handler<LoginCommand> for ClientActor {
-    type Result = ();
+    type Result = ResponseActFuture<Self, ()>;
 
     fn handle(&mut self, msg: LoginCommand, ctx: &mut Context<Self>) -> Self::Result {
-        // Blocking: We don't want others to access this client while we're logging in.
         async { login(msg.0).await.expect("failed to login") }
             .into_actor(self)
             .map(|value, act, _ctx| {
                 // Set the field `client` to our value.
                 act.client = Some(Arc::new(Mutex::new(value)));
             })
-            .wait(ctx);
+            .boxed_local()
     }
 }
 
