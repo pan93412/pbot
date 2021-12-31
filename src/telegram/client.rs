@@ -51,7 +51,7 @@ impl Actor for ClientActor {
 impl Handler<LoginCommand> for ClientActor {
     type Result = ResponseActFuture<Self, ()>;
 
-    fn handle(&mut self, msg: LoginCommand, ctx: &mut Context<Self>) -> Self::Result {
+    fn handle(&mut self, msg: LoginCommand, _: &mut Context<Self>) -> Self::Result {
         async { login(msg.0).await.expect("failed to login") }
             .into_actor(self)
             .map(|value, act, _ctx| {

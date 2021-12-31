@@ -1,4 +1,3 @@
-use core::fmt;
 use std::sync::Arc;
 
 use actix::prelude::*;
@@ -41,21 +40,25 @@ impl Actor for ClientModuleExecutor {
 impl Handler<ClientModuleMessage> for ClientModuleExecutor {
     type Result = ResponseActFuture<Self, anyhow::Result<()>>;
 
-    fn handle(&mut self, msg: ClientModuleMessage, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: ClientModuleMessage, _ctx: &mut Self::Context) -> Self::Result {
         let modules = self.modules.clone();
         let handle = self.client.clone();
+        let message = match msg.update {
+            NewMessage(message) => Ok(message),
+            _ => Err(anyhow::anyhow!("got a unhandled message")),
+        };
 
         async move {
             debug!("ClientModuleExector: start processing ClientModuleMessage");
-            let message = match &msg.update {
-                NewMessage(message) => Ok(Arc::new(message.clone())),
-                _ => Err(UnhandledMessage),
-            }?;
-    
+            let message = Arc::new(message?);
+
             for module in modules.iter() {
                 let recipient = module.recipient.clone();
     
-                let recv = recipient.send(ModuleMessage { handle, message }).await?;
+                let recv = recipient.send(ModuleMessage {
+                    handle: handle.clone(),
+                    message: message.clone()
+                }).await?;
     
                 if let Err(e) = recv {
                     error!("failed to broadcast message to {}: {:?}", module.name, e);
@@ -68,13 +71,3 @@ impl Handler<ClientModuleMessage> for ClientModuleExecutor {
             .boxed_local()
     }
 }
-
-/// The error that will be returned when the received message was not handled.
-#[derive(Debug)]
-struct UnhandledMessage;
-impl fmt::Display for UnhandledMessage {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "got a unhandled message")
-    }
-}
-impl std::error::Error for UnhandledMessage {}
