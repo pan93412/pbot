@@ -4,10 +4,10 @@ pan93412's extensible user bot, which is full-documented, engineered and based o
 
 ## Usage
 
-### Build
+### Run
 
 ```sh
-cargo run --release
+cargo run --release [--features <modules id>]
 ```
 
 ### Configure
@@ -20,20 +20,27 @@ cargo run --release
 ### Build
 
 ```sh
-cargo build
+cargo build [--features <modules id>]
 ```
 
 ### Docs
 
 ```sh
-cargo doc
+cargo doc [--features <modules id>]
 ```
 
 ### Run
 
 ```sh
-cargo run
+cargo run [--features <modules id>]
 ```
+
+## Modules
+
+| Modules ID   | Modules Name    | Description                                                      | Enable by Default |
+| ------------ | --------------- | ---------------------------------------------------------------- | ----------------- |
+| `fwdmod`     | `FwdModule`     | Simply forward the message to your specified chat with `!cufwd`. | ✅                |
+| `getinfomod` | `GetInfoModule` | Get the information of the message. For debugging purpose.       | ❌                |
 
 ## Authors
 

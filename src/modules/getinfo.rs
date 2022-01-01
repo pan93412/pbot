@@ -1,4 +1,7 @@
 //! PBot: Modules: GetInfoModule
+//! 
+//! Get the information of the message.
+//! For debugging purpose.
 
 use actix::prelude::*;
 use log::info;

@@ -1,4 +1,7 @@
 //! PBot: Modules: FwdModule
+//! 
+//! Simply forward the message to your specified chat
+//! with `!cufwd`.
 
 use std::sync::Arc;
 
