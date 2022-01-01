@@ -32,14 +32,12 @@ impl Handler<ModuleMessage> for GetInfoModuleActor {
         let ModuleMessage { handle: _, message } = msg;
 
         async move {
-            let message = message.read().await;
-
             // Show the text, sender and chat of this message.
             info!(
                 "MSG={:#?}; BY={:#?}; CHAT_ID={:#?}",
-                message.text(),
-                message.sender(),
-                message.chat()
+                message.read().await.text(),
+                message.read().await.sender(),
+                message.read().await.chat()
             );
     
             Ok(())

@@ -87,11 +87,8 @@ impl Handler<ForwardSingleMessageCommand> for ClientActor {
         let client = self.get_client();
 
         async move {
-            // Obtain the lock of client.
-            let mut client = client.write().await;
-
             // Forward the message.
-            client
+            client.write().await
                 .forward_messages(&msg.forward_to, &[msg.message_id], &msg.message_chat)
                 .await
         }
@@ -114,14 +111,11 @@ impl Handler<ResolveChatCommand> for ClientActor {
             // We let the lock period as short as possible by
             // making a block for it.
             let mut dialogs = {
-                // Obtain the lock of client.
-                let client = client.read().await;
-
                 // Get the dialogs iterator.
                 //
                 // "Dialogs" is full list of chats with messages and auxiliary data.
                 // https://core.telegram.org/constructor/messages.dialogs
-                client.iter_dialogs()
+                client.read().await.iter_dialogs()
             };
 
             // Iterate over the dialogs.
@@ -156,11 +150,8 @@ impl Handler<UnpackChatCommand> for ClientActor {
         let client = self.get_client();
 
         async move {
-            // Obtain the lock of client.
-            let mut client = client.write().await;
-
             // Unpack the chat.
-            client.unpack_chat(&msg.0).await
+            client.write().await.unpack_chat(&msg.0).await
         }
         .into_actor(self)
         .boxed_local()
@@ -175,11 +166,8 @@ impl Handler<NextUpdatesCommand> for ClientActor {
         let client = self.get_client();
 
         async move {
-            // Obtain the lock of client.
-            let client = client.read().await;
-
             // Get the next round of updates.
-            client.next_updates().await
+            client.read().await.next_updates().await
         }
         .into_actor(self)
         .boxed_local()
@@ -195,11 +183,8 @@ impl Handler<SendMessageCommand> for ClientActor {
         let SendMessageCommand(chat, message) = cmd;
 
         async move {
-            // Obtain the lock of client.
-            let mut client = client.write().await;
-
             // Send message.
-            client.send_message(&chat, message).await
+            client.write().await.send_message(&chat, message).await
         }
         .into_actor(self)
         .boxed_local()

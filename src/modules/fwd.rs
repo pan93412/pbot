@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use actix::{fut::WrapFuture, Actor, ActorFutureExt, Context, Handler, ResponseActFuture};
-use grammers_client::{types::Chat, InputMessage};
+use grammers_client::{types::{Chat, Message}, InputMessage};
 use log::{error, info, warn};
 
 use crate::telegram::{client::commands::ForwardSingleMessageCommand, user::is_root_user};
@@ -45,19 +45,25 @@ impl Handler<ModuleMessage> for FwdModuleActor {
     fn handle(&mut self, msg: ModuleMessage, _: &mut Self::Context) -> Self::Result {
         // Clone self.target to move into the following block.
         let target = self.target.clone();
+        
+        // It will only respond when:
+        //   * The message text is the text specified in CMD.
+        //   * The message is sent by the account operator.
+        let trigger_condition = |message: &Message| {
+            message.text() == CMD && is_root_user(message)
+        };
 
         async move {
             // Destruct msg and get `handle` and `message`.
             let ModuleMessage { handle, message } = msg;
-            let message_r = message.read().await;
 
-            // It will only respond when:
-            //   * The message text is the text specified in CMD.
-            //   * The message is sent by the account operator.
-            if message_r.text() == CMD && is_root_user(&message_r) {
+            if trigger_condition(&*message.read().await) {
                 // Get the ID of the chat where the message is sent.
                 // It is Option here. We will check if replied anyone later.
-                let reply_message_id = message_r.reply_to_message_id();
+                let reply_message_id = {
+                    let message = message.read().await;
+                    message.reply_to_message_id()
+                };
 
                 // Check if this message has been replied anyone.
                 if let Some(reply_message_id) = reply_message_id {
@@ -65,7 +71,7 @@ impl Handler<ModuleMessage> for FwdModuleActor {
                     // Since the chat of replied message and the chat of this message are the same,
                     // we can use the chat of the command message to
                     // represent the chat of the replied message.
-                    let reply_message_src = Arc::new(message_r.chat());
+                    let reply_message_src = Arc::new(message.read().await.chat());
 
                     // Forward the message.
                     let forward_result = handle
