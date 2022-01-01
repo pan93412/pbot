@@ -8,18 +8,46 @@ use pbot::SESSION_PATH;
 
 use std::sync::Arc;
 
-use pbot::modules::{
-    base::ModuleActivator,
-    fwd::{FwdModuleActor, FwdModuleConfig},
-};
 use pbot::telegram::{
     client::{
-        commands::{LoginCommand, NextUpdatesCommand, ResolveChatCommand, UnpackChatCommand},
+        commands::{LoginCommand, NextUpdatesCommand},
         ClientActor,
     },
     update::{ClientModuleExecutor, ClientModuleMessage},
     user::LoginConfig,
 };
+
+#[cfg(feature = "fwdmod")]
+async fn activate_fwd_mod(client: &Addr<ClientActor>) -> pbot::modules::base::ActivatedModuleInfo {
+    use pbot::modules::{
+        base::ModuleActivator,
+        fwd::{FwdModuleActor, FwdModuleConfig},
+    };
+    use pbot::telegram::client::commands::{ResolveChatCommand, UnpackChatCommand};
+
+    // Resolve the chat ID from the environment variable `TG_FWD_TO`.
+    //
+    // For details, see the implementation of Handler<ResolveChatCommand> in ClientActor.
+    let pack_chat = client
+        .send(ResolveChatCommand(getenv!("TG_FWD_TO", i32)))
+        .await
+        .unwrap()
+        .expect("failed to get the chat forward to");
+
+    // Unpack the Chat object from the PackedChat.
+    //
+    // For details, see the implementation of Handler<UnpackChatCommand> in ClientActor.
+    let fwd_chat = client
+        .send(UnpackChatCommand(pack_chat))
+        .await
+        .unwrap()
+        .expect("failed to unpack the chat");
+
+    // We initiate the FwdModule with the Chat object.
+    FwdModuleActor::activate_module(FwdModuleConfig {
+        target: Arc::new(fwd_chat),
+    })
+}
 
 #[actix::main]
 async fn main() {
@@ -43,36 +71,23 @@ async fn main() {
         .await
         .expect("failed to login");
 
-    /* Phase III: Initiate FwdModule */
-    let fwd_mod = {
-        // Resolve the chat ID from the environment variable `TG_FWD_TO`.
-        //
-        // For details, see the implementation of Handler<ResolveChatCommand> in ClientActor.
-        let pack_chat = client
-            .send(ResolveChatCommand(getenv!("TG_FWD_TO", i32)))
-            .await
-            .unwrap()
-            .expect("failed to get the chat forward to");
-
-        // Unpack the Chat object from the PackedChat.
-        //
-        // For details, see the implementation of Handler<UnpackChatCommand> in ClientActor.
-        let fwd_chat = client
-            .send(UnpackChatCommand(pack_chat))
-            .await
-            .unwrap()
-            .expect("failed to unpack the chat");
-
-        // We initiate the FwdModule with the Chat object.
-        FwdModuleActor::activate_module(FwdModuleConfig {
-            target: Arc::new(fwd_chat),
-        })
-    };
+    /* Phase III: Initiate Modules */
+    let mut modules = Vec::new();
+    // Initiate FwdModule
+    #[cfg(feature = "fwdmod")]
+    {
+        modules.push(activate_fwd_mod(&client).await);
+    }
+    // Initiate GetInfoModule
+    #[cfg(feature = "getinfomod")] {
+        use pbot::modules::base::ModuleActivator;
+        modules.push(pbot::modules::getinfo::GetInfoModuleActor::activate_module(()));
+    }
 
     /* Phase IV: Initiate ClientModuleExecutor */
     let executor = ClientModuleExecutor {
         client: client.clone(),
-        modules: Arc::new(vec![fwd_mod]),
+        modules: Arc::new(modules),
     }
     .start();
 
