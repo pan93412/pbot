@@ -1,5 +1,5 @@
 //! PBot: Modules: GetInfoModule
-//! 
+//!
 //! Get the information of the message.
 //! For debugging purpose.
 
