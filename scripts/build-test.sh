@@ -21,8 +21,8 @@ cargo_f_check() {
     fi
 }
 
-true \
-    && cargo_f_check "" \
-    && cargo_f_check fwdmod \
-    && cargo_f_check getinfomod \
-    && cargo_f_check "fwdmod getinfomod"
+cargo_f_check ""
+cargo_f_check fwdmod
+cargo_f_check getinfomod
+cargo_f_check "fwdmod getinfomod"
+exit 0
