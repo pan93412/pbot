@@ -88,7 +88,9 @@ impl Handler<ForwardSingleMessageCommand> for ClientActor {
 
         async move {
             // Forward the message.
-            client.write().await
+            client
+                .write()
+                .await
                 .forward_messages(&msg.forward_to, &[msg.message_id], &msg.message_chat)
                 .await
         }

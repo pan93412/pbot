@@ -84,10 +84,13 @@ async fn main() {
         modules.push(activate_fwd_mod(&client).await);
     }
     // Initiate GetInfoModule
-    #[cfg(feature = "getinfomod")] {
+    #[cfg(feature = "getinfomod")]
+    {
         info!("  → Enabled: GetInfoModule");
         use pbot::modules::base::ModuleActivator;
-        modules.push(pbot::modules::getinfo::GetInfoModuleActor::activate_module(()));
+        modules.push(pbot::modules::getinfo::GetInfoModuleActor::activate_module(
+            (),
+        ));
     }
 
     /* Phase IV: Initiate ClientModuleExecutor */

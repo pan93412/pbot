@@ -39,11 +39,11 @@ impl Handler<ModuleMessage> for GetInfoModuleActor {
                 message.read().await.sender(),
                 message.read().await.chat()
             );
-    
+
             Ok(())
         }
-            .into_actor(self)
-            .boxed_local()
+        .into_actor(self)
+        .boxed_local()
     }
 }
 

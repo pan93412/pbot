@@ -3,7 +3,10 @@
 use std::sync::Arc;
 
 use actix::{fut::WrapFuture, Actor, ActorFutureExt, Context, Handler, ResponseActFuture};
-use grammers_client::{types::{Chat, Message}, InputMessage};
+use grammers_client::{
+    types::{Chat, Message},
+    InputMessage,
+};
 use log::{error, info, warn};
 
 use crate::telegram::{client::commands::ForwardSingleMessageCommand, user::is_root_user};
@@ -45,13 +48,11 @@ impl Handler<ModuleMessage> for FwdModuleActor {
     fn handle(&mut self, msg: ModuleMessage, _: &mut Self::Context) -> Self::Result {
         // Clone self.target to move into the following block.
         let target = self.target.clone();
-        
+
         // It will only respond when:
         //   * The message text is the text specified in CMD.
         //   * The message is sent by the account operator.
-        let trigger_condition = |message: &Message| {
-            message.text() == CMD && is_root_user(message)
-        };
+        let trigger_condition = |message: &Message| message.text() == CMD && is_root_user(message);
 
         async move {
             // Destruct msg and get `handle` and `message`.
@@ -106,9 +107,7 @@ impl Handler<ModuleMessage> for FwdModuleActor {
                     message
                         .write()
                         .await
-                        .edit(InputMessage::text(
-                            "[PBOT] ⚠️ 請回覆訊息。",
-                        ))
+                        .edit(InputMessage::text("[PBOT] ⚠️ 請回覆訊息。"))
                         .await?;
                 }
             }
