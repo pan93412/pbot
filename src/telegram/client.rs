@@ -7,7 +7,7 @@ pub mod commands;
 
 use actix::prelude::*;
 
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 
 use grammers_client::types::iter_buffer::InvocationError;
 use grammers_client::UpdateIter;
@@ -28,12 +28,12 @@ use log::{debug, info};
 /// The Telegram client actor.
 #[derive(Default)]
 pub struct ClientActor {
-    client: Option<Arc<Mutex<Client>>>,
+    client: Option<Arc<RwLock<Client>>>,
 }
 
 impl ClientActor {
-    /// Get the `Arc<Mutex<Client>>` instance.
-    pub fn get_client(&mut self) -> Arc<Mutex<Client>> {
+    /// Get the `Arc<RwLock<Client>>` instance.
+    pub fn get_client(&mut self) -> Arc<RwLock<Client>> {
         self.client
             .clone()
             .expect("You must login your Telegram first.")
@@ -64,7 +64,7 @@ impl Handler<LoginCommand> for ClientActor {
             .into_actor(self)
             .map(|value, act, _ctx| {
                 // Set the field `client` to the value returned from login().
-                act.client = Some(Arc::new(Mutex::new(value)));
+                act.client = Some(Arc::new(RwLock::new(value)));
             })
             .boxed_local()
     }
@@ -87,7 +87,7 @@ impl Handler<ForwardSingleMessageCommand> for ClientActor {
 
         async move {
             // Obtain the lock of client.
-            let mut client = client.lock().unwrap();
+            let mut client = client.write().unwrap();
 
             // Forward the message.
             client
@@ -114,7 +114,7 @@ impl Handler<ResolveChatCommand> for ClientActor {
             // making a block for it.
             let mut dialogs = {
                 // Obtain the lock of client.
-                let client = client.lock().unwrap();
+                let client = client.read().unwrap();
 
                 // Get the dialogs iterator.
                 //
@@ -156,7 +156,7 @@ impl Handler<UnpackChatCommand> for ClientActor {
 
         async move {
             // Obtain the lock of client.
-            let mut client = client.lock().unwrap();
+            let mut client = client.write().unwrap();
 
             // Unpack the chat.
             client.unpack_chat(&msg.0).await
@@ -175,7 +175,7 @@ impl Handler<NextUpdatesCommand> for ClientActor {
 
         async move {
             // Obtain the lock of client.
-            let client = client.lock().unwrap();
+            let client = client.read().unwrap();
 
             // Get the next round of updates.
             client.next_updates().await
@@ -195,7 +195,7 @@ impl Handler<SendMessageCommand> for ClientActor {
 
         async move {
             // Obtain the lock of client.
-            let mut client = client.lock().unwrap();
+            let mut client = client.write().unwrap();
 
             // Send message.
             client.send_message(&chat, message).await
