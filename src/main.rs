@@ -1,6 +1,7 @@
 use actix::prelude::*;
 
 use dotenv::dotenv;
+use log::info;
 use simple_logger::SimpleLogger;
 
 use pbot::getenv;
@@ -52,6 +53,7 @@ async fn activate_fwd_mod(client: &Addr<ClientActor>) -> pbot::modules::base::Ac
 #[actix::main]
 async fn main() {
     /* Phase I: Initiate loggers and dotenv */
+    info!("Configurating loggers and dotenv...");
     SimpleLogger::new()
         .with_utc_timestamps()
         .with_level(log::LevelFilter::Info)
@@ -60,6 +62,7 @@ async fn main() {
     dotenv().expect("a .env file should be existed in the current working directory");
 
     /* Phase II: Start Telegram Client */
+    info!("Starting Telegram client...");
     let client = ClientActor::default().start();
     client
         .send(LoginCommand(LoginConfig {
@@ -72,19 +75,23 @@ async fn main() {
         .expect("failed to login");
 
     /* Phase III: Initiate Modules */
+    info!("Initiating modules...");
     let mut modules = Vec::new();
     // Initiate FwdModule
     #[cfg(feature = "fwdmod")]
     {
+        info!("  → Enabled: FwdModule");
         modules.push(activate_fwd_mod(&client).await);
     }
     // Initiate GetInfoModule
     #[cfg(feature = "getinfomod")] {
+        info!("  → Enabled: GetInfoModule");
         use pbot::modules::base::ModuleActivator;
         modules.push(pbot::modules::getinfo::GetInfoModuleActor::activate_module(()));
     }
 
     /* Phase IV: Initiate ClientModuleExecutor */
+    info!("Initiating ClientModuleExecutor...");
     let executor = ClientModuleExecutor {
         client: client.clone(),
         modules: Arc::new(modules),
@@ -92,6 +99,7 @@ async fn main() {
     .start();
 
     /* Phase V: Polling updates */
+    info!("Polling updates...");
     while let Some(updates) = tokio::select! {
         _ = tokio::signal::ctrl_c() => Ok(Ok(None)),
         result = client.send(NextUpdatesCommand) => result,
