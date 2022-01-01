@@ -8,7 +8,7 @@ pub mod commands;
 use actix::prelude::*;
 
 use std::sync::Arc;
-use futures_locks::RwLock;
+use tokio::sync::RwLock;
 
 use grammers_client::types::iter_buffer::InvocationError;
 use grammers_client::UpdateIter;

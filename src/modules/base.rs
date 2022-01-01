@@ -3,7 +3,7 @@
 //! The base structure and traits of the PBot modules.
 
 use std::sync::Arc;
-use futures_locks::RwLock;
+use tokio::sync::RwLock;
 
 use actix::{Addr, Handler, Message, Recipient};
 

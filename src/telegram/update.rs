@@ -4,7 +4,7 @@ use actix::prelude::*;
 
 use log::{error, info};
 use std::sync::Arc;
-use futures_locks::RwLock;
+use tokio::sync::RwLock;
 
 use super::client::ClientActor;
 
