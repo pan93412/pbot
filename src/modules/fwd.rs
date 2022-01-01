@@ -49,14 +49,15 @@ impl Handler<ModuleMessage> for FwdModuleActor {
         async move {
             // Destruct msg and get `handle` and `message`.
             let ModuleMessage { handle, message } = msg;
+            let message_r = message.read().await;
 
             // It will only respond when:
             //   * The message text is the text specified in CMD.
             //   * The message is sent by the account operator.
-            if message.text() == CMD && is_root_user(&message) {
+            if message_r.text() == CMD && is_root_user(&message_r) {
                 // Get the ID of the chat where the message is sent.
                 // It is Option here. We will check if replied anyone later.
-                let reply_message_id = message.reply_to_message_id();
+                let reply_message_id = message_r.reply_to_message_id();
 
                 // Check if this message has been replied anyone.
                 if let Some(reply_message_id) = reply_message_id {
@@ -64,7 +65,7 @@ impl Handler<ModuleMessage> for FwdModuleActor {
                     // Since the chat of replied message and the chat of this message are the same,
                     // we can use the chat of the command message to
                     // represent the chat of the replied message.
-                    let reply_message_src = Arc::new(message.chat());
+                    let reply_message_src = Arc::new(message_r.chat());
 
                     // Forward the message.
                     let forward_result = handle
@@ -81,15 +82,9 @@ impl Handler<ModuleMessage> for FwdModuleActor {
                         Ok(_) => {
                             info!("💬 Message forwarded!");
 
-                            // .edit() requires the message to be mutable,
-                            // but this message is a Arc pointer and thus immutable.
-                            //
-                            // We need to get the original message instance itself
-                            // and clone it.
-                            //
-                            // FIXME: It is pretty costly.
-                            (*message)
-                                .clone()
+                            message
+                                .write()
+                                .await
                                 .edit(InputMessage::text(
                                     "[PBOT] 💬 訊息已轉錄至個人群組。若要撤下請回覆告知。",
                                 ))
@@ -102,16 +97,12 @@ impl Handler<ModuleMessage> for FwdModuleActor {
                     // No - Let user know how to use it correctly.
                     warn!("No reply message found");
 
-                    // .edit() requires the message to be mutable,
-                    // but this message is a Arc pointer and thus immutable.
-                    //
-                    // We need to get the original message instance itself
-                    // and clone it.
-                    //
-                    // FIXME: It is pretty costly.
-                    (*message)
-                        .clone()
-                        .edit(InputMessage::text("[PBOT] ⚠️ 請回覆訊息。"))
+                    message
+                        .write()
+                        .await
+                        .edit(InputMessage::text(
+                            "[PBOT] ⚠️ 請回覆訊息。",
+                        ))
                         .await?;
                 }
             }

@@ -3,6 +3,7 @@
 //! The base structure and traits of the PBot modules.
 
 use std::sync::Arc;
+use futures_locks::RwLock;
 
 use actix::{Addr, Handler, Message, Recipient};
 
@@ -26,7 +27,7 @@ pub struct ModuleMessage {
     /// The address to a [`ClientActor`] instance.
     pub handle: Addr<ClientActor>,
     /// The message received.
-    pub message: Arc<types::Message>,
+    pub message: Arc<RwLock<types::Message>>,
 }
 
 /// The metadata that a PBot Module should have.

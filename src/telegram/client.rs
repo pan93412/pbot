@@ -7,7 +7,8 @@ pub mod commands;
 
 use actix::prelude::*;
 
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
+use futures_locks::RwLock;
 
 use grammers_client::types::iter_buffer::InvocationError;
 use grammers_client::UpdateIter;
@@ -87,7 +88,7 @@ impl Handler<ForwardSingleMessageCommand> for ClientActor {
 
         async move {
             // Obtain the lock of client.
-            let mut client = client.write().unwrap();
+            let mut client = client.write().await;
 
             // Forward the message.
             client
@@ -114,7 +115,7 @@ impl Handler<ResolveChatCommand> for ClientActor {
             // making a block for it.
             let mut dialogs = {
                 // Obtain the lock of client.
-                let client = client.read().unwrap();
+                let client = client.read().await;
 
                 // Get the dialogs iterator.
                 //
@@ -156,7 +157,7 @@ impl Handler<UnpackChatCommand> for ClientActor {
 
         async move {
             // Obtain the lock of client.
-            let mut client = client.write().unwrap();
+            let mut client = client.write().await;
 
             // Unpack the chat.
             client.unpack_chat(&msg.0).await
@@ -175,7 +176,7 @@ impl Handler<NextUpdatesCommand> for ClientActor {
 
         async move {
             // Obtain the lock of client.
-            let client = client.read().unwrap();
+            let client = client.read().await;
 
             // Get the next round of updates.
             client.next_updates().await
@@ -195,7 +196,7 @@ impl Handler<SendMessageCommand> for ClientActor {
 
         async move {
             // Obtain the lock of client.
-            let mut client = client.write().unwrap();
+            let mut client = client.write().await;
 
             // Send message.
             client.send_message(&chat, message).await

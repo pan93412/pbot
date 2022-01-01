@@ -1,6 +1,6 @@
 //! PBot: Modules: GetInfoModule
 
-use actix::{Actor, Context, Handler};
+use actix::prelude::*;
 use log::info;
 
 use super::base::{ActivatedModuleInfo, ModuleActivator, ModuleMessage, ModuleMeta};
@@ -25,21 +25,27 @@ impl Actor for GetInfoModuleActor {
 }
 
 impl Handler<ModuleMessage> for GetInfoModuleActor {
-    type Result = anyhow::Result<()>;
+    type Result = ResponseActFuture<Self, anyhow::Result<()>>;
 
     fn handle(&mut self, msg: ModuleMessage, _: &mut Self::Context) -> Self::Result {
         // Destruct msg and get `handle` and `message`.
         let ModuleMessage { handle: _, message } = msg;
 
-        // Show the text, sender and chat of this message.
-        info!(
-            "MSG={:#?}; BY={:#?}; CHAT_ID={:#?}",
-            message.text(),
-            message.sender(),
-            message.chat()
-        );
+        async move {
+            let message = message.read().await;
 
-        Ok(())
+            // Show the text, sender and chat of this message.
+            info!(
+                "MSG={:#?}; BY={:#?}; CHAT_ID={:#?}",
+                message.text(),
+                message.sender(),
+                message.chat()
+            );
+    
+            Ok(())
+        }
+            .into_actor(self)
+            .boxed_local()
     }
 }
 

@@ -4,6 +4,7 @@ use actix::prelude::*;
 
 use log::{error, info};
 use std::sync::Arc;
+use futures_locks::RwLock;
 
 use super::client::ClientActor;
 
@@ -60,7 +61,7 @@ impl Handler<ClientModuleMessage> for ClientModuleExecutor {
         async move {
             // Make a Arc smart pointer to the message
             // so we can share it with those modules.
-            let message = Arc::new(message?);
+            let message = Arc::new(RwLock::new(message?));
 
             // Join all the .send() futures.
             futures::future::join_all(modules.iter().map(|module| async {
