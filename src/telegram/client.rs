@@ -6,6 +6,7 @@
 pub mod commands;
 
 use actix::prelude::*;
+use grammers_client::types::AdminRightsBuilder;
 
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -19,7 +20,7 @@ use grammers_client::{
 
 use self::commands::{
     ForwardSingleMessageCommand, LoginCommand, NextUpdatesCommand, ResolveChatCommand,
-    SendMessageCommand, UnpackChatCommand,
+    SendMessageCommand, UnpackChatCommand, GetAdminRightsBuilderCommand,
 };
 
 use super::user::login;
@@ -187,6 +188,23 @@ impl Handler<SendMessageCommand> for ClientActor {
         async move {
             // Send message.
             client.write().await.send_message(&chat, message).await
+        }
+        .into_actor(self)
+        .boxed_local()
+    }
+}
+
+impl Handler<GetAdminRightsBuilderCommand> for ClientActor {
+    type Result = ResponseActFuture<Self, AdminRightsBuilder>;
+
+    /// Get the admin rights builder.
+    fn handle(&mut self, cmd: GetAdminRightsBuilderCommand, _: &mut Context<Self>) -> Self::Result {
+        let client = self.get_client();
+        let GetAdminRightsBuilderCommand { channel, user } = cmd;
+
+        async move {
+            // Set the badge
+            client.write().await.set_admin_rights(&channel, &user)
         }
         .into_actor(self)
         .boxed_local()
