@@ -8,7 +8,7 @@
 //! You would need to include this module in `modules.rs`,
 //! and initiate your module in `main.rs`.
 
-use actix::{fut::WrapFuture, Actor, ActorFutureExt, Context, Handler, ResponseActFuture};
+use actix::prelude::*;
 use log::info;
 
 use super::base::{ActivatedModuleInfo, ModuleActivator, ModuleMessage, ModuleMeta};
