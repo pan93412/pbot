@@ -81,7 +81,7 @@ impl Handler<ClientModuleMessage> for ClientModuleExecutor {
                 // module.name is the module name;
                 // e is the error from module.recipient.send().
                 if let Err(e) = error {
-                    error!("failed to broadcast message to {}: {:?}", module.name, e);
+                    error!("error in {}: {:?}", module.name, e);
                 }
             }))
             .await;
