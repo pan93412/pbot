@@ -22,7 +22,7 @@ use pbot::telegram::{
 async fn activate_fwd_mod(client: &Addr<ClientActor>) -> pbot::modules::base::ActivatedModuleInfo {
     use pbot::modules::{
         base::ModuleActivator,
-        fwd::{FwdModuleActor, FwdModuleConfig},
+        fwd::FwdModuleActor,
     };
     use pbot::telegram::client::commands::{ResolveChatCommand, UnpackChatCommand};
 

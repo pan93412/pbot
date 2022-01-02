@@ -6,7 +6,7 @@
 use actix::prelude::*;
 use log::info;
 
-use super::base::{ActivatedModuleInfo, ModuleActivator, ModuleMessage, ModuleMeta};
+use super::base::{ModuleActivator, ModuleMessage, ModuleMeta};
 
 /// The GetInfoModule module that is for debugging.
 ///

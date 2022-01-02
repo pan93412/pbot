@@ -25,14 +25,6 @@ pub struct FwdModuleActor {
     pub target: Arc<Chat>,
 }
 
-/// The configuration of FwdModule.
-pub struct FwdModuleConfig {
-    /// Where the message will be forwarded to.
-    ///
-    /// It will be used to initiate [`FwdModuleActor`].
-    pub target: Arc<Chat>,
-}
-
 impl Actor for FwdModuleActor {
     type Context = Context<Self>;
 
