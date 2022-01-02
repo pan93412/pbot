@@ -87,7 +87,13 @@ impl Handler<ModuleMessage> for AddRankModuleActor {
                 .await?;
 
             // Set the rank and send the request to Telegram.
-            admin_builder.rank(&rank).invoke().await?;
+            admin_builder
+                .load_current()
+                .await?
+                .manage_call(true)
+                .rank(&rank)
+                .invoke()
+                .await?;
 
             // Notify user that the operation is succeed.
             message
