@@ -24,5 +24,9 @@ cargo_f_check() {
 cargo_f_check ""
 cargo_f_check fwdmod
 cargo_f_check getinfomod
+cargo_f_check addrankmod
 cargo_f_check "fwdmod getinfomod"
+cargo_f_check "fwdmod addrankmod"
+cargo_f_check "getinfomod addrankmod"
+cargo_f_check "fwdmod getinfomod addrankmod"
 exit 0
