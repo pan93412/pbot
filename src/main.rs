@@ -90,6 +90,12 @@ async fn main() {
         use pbot::modules::base::ModuleActivator;
         modules.push(pbot::modules::getinfo::GetInfoModuleActor.activate_module());
     }
+    #[cfg(feature = "addrankmod")]
+    {
+        info!("  → Enabled: AddRankModule");
+        use pbot::modules::base::ModuleActivator;
+        modules.push(pbot::modules::addrank::AddRankModuleActor.activate_module());
+    }
 
     /* Phase IV: Initiate ClientModuleExecutor */
     info!("Initiating ClientModuleExecutor...");

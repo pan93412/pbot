@@ -5,3 +5,5 @@ pub mod base;
 pub mod fwd;
 #[cfg(feature = "getinfomod")]
 pub mod getinfo;
+#[cfg(feature = "addrankmod")]
+pub mod addrank;
