@@ -1,6 +1,6 @@
 //! PBot: Modules: AddRankModule
 //!
-//! You can add rank for every members you administrated
+//! You can add rank for every member you administrated
 //! without giving the actual permission.
 
 use actix::prelude::*;
