@@ -11,18 +11,12 @@
 use actix::prelude::*;
 use log::info;
 
-use super::base::{ActivatedModuleInfo, ModuleActivator, ModuleMessage, ModuleMeta};
+use super::base::{ModuleActivator, ModuleMessage, ModuleMeta};
 
 /// The TemplateModule actor.
 #[derive(Clone, Default)]
 pub struct TemplateModuleActor {
     // DEVEDIT: You can specify your actor's context here.
-}
-
-/// The configuration of FwdModule.
-pub struct TemplateModuleConfig {
-    // DEVEDIT: You can specify your actor's configuration to pass to
-    // initiator here.
 }
 
 impl Actor for TemplateModuleActor {
@@ -68,22 +62,4 @@ impl ModuleMeta for TemplateModuleActor {
     }
 }
 
-impl ModuleActivator for TemplateModuleActor {
-    type Config = TemplateModuleConfig;
-
-    fn activate_module(_: Self::Config) -> ActivatedModuleInfo {
-        // DEVEDIT: You can pass your module's configuration to its actor here.
-
-        // Create the instance with the config.
-        let actor = Self::default();
-        // Get the actor name before consumed.
-        let name = actor.name();
-        // Start this instance and retrieve its address.
-        let addr = actor.start();
-
-        ActivatedModuleInfo {
-            name,
-            recipient: addr.recipient(),
-        }
-    }
-}
+impl ModuleActivator for TemplateModuleActor {}

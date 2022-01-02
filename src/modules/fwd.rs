@@ -14,7 +14,7 @@ use log::{error, info, warn};
 
 use crate::telegram::{client::commands::ForwardSingleMessageCommand, user::is_root_user};
 
-use super::base::{ActivatedModuleInfo, ModuleActivator, ModuleMessage, ModuleMeta};
+use super::base::{ModuleActivator, ModuleMessage, ModuleMeta};
 
 const CMD: &str = "!cufwd";
 
@@ -129,22 +129,4 @@ impl ModuleMeta for FwdModuleActor {
     }
 }
 
-impl ModuleActivator for FwdModuleActor {
-    type Config = FwdModuleConfig;
-
-    fn activate_module(config: Self::Config) -> ActivatedModuleInfo {
-        // Create the instance with the config.
-        let actor = Self {
-            target: config.target,
-        };
-        // Get the actor name before consumed.
-        let name = actor.name();
-        // Start this instance and retrieve its address.
-        let addr = actor.start();
-
-        ActivatedModuleInfo {
-            name,
-            recipient: addr.recipient(),
-        }
-    }
-}
+impl ModuleActivator for FwdModuleActor {}

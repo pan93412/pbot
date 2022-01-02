@@ -56,20 +56,4 @@ impl ModuleMeta for GetInfoModuleActor {
     }
 }
 
-impl ModuleActivator for GetInfoModuleActor {
-    type Config = ();
-
-    fn activate_module(_: Self::Config) -> ActivatedModuleInfo {
-        // Create the instance.
-        let actor = Self;
-        // Get the actor name before consumed.
-        let name = actor.name();
-        // Start this instance and retrieve its address.
-        let addr = actor.start();
-
-        ActivatedModuleInfo {
-            name,
-            recipient: addr.recipient(),
-        }
-    }
-}
+impl ModuleActivator for GetInfoModuleActor {}

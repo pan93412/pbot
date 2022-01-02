@@ -5,7 +5,7 @@
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-use actix::{Addr, Handler, Message, Recipient};
+use actix::prelude::*;
 
 use crate::telegram::client::ClientActor;
 use grammers_client::types;
@@ -37,17 +37,20 @@ pub trait ModuleMeta {
 }
 
 /// The module activator.
-pub trait ModuleActivator
-where
-    Self: Handler<ModuleMessage>,
+pub trait ModuleActivator:
+    Handler<ModuleMessage> + ModuleMeta + Actor<Context = Context<Self>>
 {
-    /// The configuration structure that'll pass to activate_module
-    ///
-    /// You can receive this structure in [`Self::activate_module`]
-    /// for initizating your module.
-    type Config;
-
     /// Activate this module and get [`ActivatedModuleInfo`] including
     /// the module name and the recipient to this module.
-    fn activate_module(config: Self::Config) -> ActivatedModuleInfo;
+    fn activate_module(self) -> ActivatedModuleInfo {
+        // Get the actor name before consumed.
+        let name = self.name();
+        // Start this instance and retrieve its address.
+        let addr = self.start();
+
+        ActivatedModuleInfo {
+            name,
+            recipient: addr.recipient(),
+        }
+    }
 }

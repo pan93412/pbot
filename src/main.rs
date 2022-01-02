@@ -45,9 +45,9 @@ async fn activate_fwd_mod(client: &Addr<ClientActor>) -> pbot::modules::base::Ac
         .expect("failed to unpack the chat");
 
     // We initiate the FwdModule with the Chat object.
-    FwdModuleActor::activate_module(FwdModuleConfig {
+    FwdModuleActor {
         target: Arc::new(fwd_chat),
-    })
+    }.activate_module()
 }
 
 #[actix::main]
@@ -88,9 +88,7 @@ async fn main() {
     {
         info!("  → Enabled: GetInfoModule");
         use pbot::modules::base::ModuleActivator;
-        modules.push(pbot::modules::getinfo::GetInfoModuleActor::activate_module(
-            (),
-        ));
+        modules.push(pbot::modules::getinfo::GetInfoModuleActor.activate_module());
     }
 
     /* Phase IV: Initiate ClientModuleExecutor */
