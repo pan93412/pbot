@@ -19,8 +19,8 @@ use grammers_client::{
 };
 
 use self::commands::{
-    ForwardSingleMessageCommand, LoginCommand, NextUpdatesCommand, ResolveChatCommand,
-    SendMessageCommand, UnpackChatCommand, GetAdminRightsBuilderCommand,
+    ForwardSingleMessageCommand, GetAdminRightsBuilderCommand, LoginCommand, NextUpdatesCommand,
+    ResolveChatCommand, SendMessageCommand, UnpackChatCommand,
 };
 
 use super::user::login;

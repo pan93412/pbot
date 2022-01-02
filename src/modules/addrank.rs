@@ -5,7 +5,7 @@
 
 use actix::prelude::*;
 use grammers_client::InputMessage;
-use log::{info, debug};
+use log::{debug, info};
 
 use crate::telegram::{client::commands::GetAdminRightsBuilderCommand, user::is_root_user};
 

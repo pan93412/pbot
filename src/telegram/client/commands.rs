@@ -4,9 +4,9 @@ use std::sync::Arc;
 
 use super::super::user::LoginConfig;
 use actix::prelude::*;
-use grammers_client::types::User;
 use grammers_client::types::iter_buffer::InvocationError;
-use grammers_client::types::{chat::PackedChat, Chat, AdminRightsBuilder};
+use grammers_client::types::User;
+use grammers_client::types::{chat::PackedChat, AdminRightsBuilder, Chat};
 use grammers_client::{InputMessage, UpdateIter};
 
 /// Logging in to Telegram.

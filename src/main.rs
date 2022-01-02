@@ -20,10 +20,7 @@ use pbot::telegram::{
 
 #[cfg(feature = "fwdmod")]
 async fn activate_fwd_mod(client: &Addr<ClientActor>) -> pbot::modules::base::ActivatedModuleInfo {
-    use pbot::modules::{
-        base::ModuleActivator,
-        fwd::FwdModuleActor,
-    };
+    use pbot::modules::{base::ModuleActivator, fwd::FwdModuleActor};
     use pbot::telegram::client::commands::{ResolveChatCommand, UnpackChatCommand};
 
     // Resolve the chat ID from the environment variable `TG_FWD_TO`.
@@ -47,7 +44,8 @@ async fn activate_fwd_mod(client: &Addr<ClientActor>) -> pbot::modules::base::Ac
     // We initiate the FwdModule with the Chat object.
     FwdModuleActor {
         target: Arc::new(fwd_chat),
-    }.activate_module()
+    }
+    .activate_module()
 }
 
 #[actix::main]
