@@ -2,6 +2,7 @@ use actix::prelude::*;
 
 use dotenv::dotenv;
 use log::info;
+use pbot::telegram::client::commands::SaveSessionToFileCommand;
 use simple_logger::SimpleLogger;
 
 use pbot::getenv;
@@ -75,6 +76,7 @@ async fn main() {
     /* Phase III: Initiate Modules */
     info!("Initiating modules...");
     let mut modules = Vec::new();
+
     // Initiate FwdModule
     #[cfg(feature = "fwdmod")]
     {
@@ -121,4 +123,14 @@ async fn main() {
         )
         .await;
     }
+
+    /* Phase VI: Save session to file */
+    info!("Saving session file and exiting...");
+    client
+        .send(SaveSessionToFileCommand(SESSION_PATH))
+        .await
+        // The mailbox error.
+        .expect("Failed to send request to Client.")
+        // The session saving error.
+        .expect("Failed to save session file.");
 }

@@ -8,6 +8,7 @@ pub mod commands;
 use actix::prelude::*;
 use grammers_client::types::AdminRightsBuilder;
 
+use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
@@ -20,7 +21,7 @@ use grammers_client::{
 
 use self::commands::{
     ForwardSingleMessageCommand, GetAdminRightsBuilderCommand, LoginCommand, NextUpdatesCommand,
-    ResolveChatCommand, SendMessageCommand, UnpackChatCommand,
+    ResolveChatCommand, SendMessageCommand, UnpackChatCommand, SaveSessionToFileCommand,
 };
 
 use super::user::login;
@@ -203,8 +204,23 @@ impl Handler<GetAdminRightsBuilderCommand> for ClientActor {
         let GetAdminRightsBuilderCommand { channel, user } = cmd;
 
         async move {
-            // Set the badge
             client.write().await.set_admin_rights(&channel, &user)
+        }
+        .into_actor(self)
+        .boxed_local()
+    }
+}
+
+impl<T> Handler<SaveSessionToFileCommand<T>> for ClientActor where T: 'static + AsRef<Path> {
+    type Result = ResponseActFuture<Self, std::io::Result<()>>;
+
+    /// Save the current session to file.
+    /// 
+    /// The first element is the file to save.
+    fn handle(&mut self, cmd: SaveSessionToFileCommand<T>, _: &mut Context<Self>) -> Self::Result {
+        let client = self.get_client();
+        async move {
+            client.write().await.session().save_to_file(cmd.0)
         }
         .into_actor(self)
         .boxed_local()

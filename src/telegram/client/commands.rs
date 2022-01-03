@@ -1,5 +1,6 @@
 //! Commands for the client actor.
 
+use std::path::Path;
 use std::sync::Arc;
 
 use super::super::user::LoginConfig;
@@ -55,3 +56,10 @@ pub struct GetAdminRightsBuilderCommand {
     /// The user to apply the admin rights to.
     pub user: User,
 }
+
+/// Save the current session to file.
+/// 
+/// The first element is the file to save.
+#[derive(Message)]
+#[rtype(result = "std::io::Result<()>")]
+pub struct SaveSessionToFileCommand<T: 'static + AsRef<Path>>(pub T);
