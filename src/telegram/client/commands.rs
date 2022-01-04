@@ -58,7 +58,7 @@ pub struct GetAdminRightsBuilderCommand {
 }
 
 /// Save the current session to file.
-/// 
+///
 /// The first element is the file to save.
 #[derive(Message)]
 #[rtype(result = "std::io::Result<()>")]
