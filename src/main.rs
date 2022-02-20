@@ -114,14 +114,9 @@ async fn main() {
     .unwrap()
     .expect("failed to retrieve updates")
     {
-        // Join all the .send() futures.
-        futures::future::join_all(
-            updates
-                .into_iter()
-                // Send request to ClientModuleExecutor, let it distribute Update to modules.
-                .map(|update| executor.send(ClientModuleMessage { update })),
-        )
-        .await;
+        for update in updates {
+            tokio::spawn(executor.send(ClientModuleMessage { update }));
+        }
     }
 
     /* Phase VI: Save session to file */

@@ -62,29 +62,34 @@ impl Handler<ClientModuleMessage> for ClientModuleExecutor {
             // Make a Arc smart pointer to the message
             // so we can share it with those modules.
             let message = Arc::new(RwLock::new(message?));
+            
+            for module in modules.iter() {
+                // Clone some context that the following code will use.
+                let module = module.clone();
+                let message = message.clone();
+                let handle = handle.clone();
 
-            // Join all the .send() futures.
-            futures::future::join_all(modules.iter().map(|module| async {
-                // Forward our handle and message to the module.
-                //
-                // Note that we clone() twice - first to workaround the lifetime issue,
-                // this to let the every modules consume.
-                let error = module
-                    .recipient
-                    .send(ModuleMessage {
-                        handle: handle.clone(),
-                        message: message.clone(),
-                    })
-                    .await
-                    .unwrap();
-
-                // module.name is the module name;
-                // e is the error from module.recipient.send().
-                if let Err(e) = error {
-                    error!("error in {}: {:?}", module.name, e);
-                }
-            }))
-            .await;
+                tokio::spawn(async move {
+                    // Forward our handle and message to the module.
+                    //
+                    // Note that we clone() twice - first to workaround the lifetime issue,
+                    // this to let the every modules consume.
+                    let error = module
+                        .recipient
+                        .send(ModuleMessage {
+                            handle,
+                            message,
+                        })
+                        .await
+                        .unwrap();
+    
+                    // module.name is the module name;
+                    // e is the error from module.recipient.send().
+                    if let Err(e) = error {
+                        error!("error in {}: {:?}", module.name, e);
+                    }
+                });
+            }
 
             Ok(())
         }

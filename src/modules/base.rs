@@ -11,6 +11,7 @@ use crate::telegram::client::ClientActor;
 use grammers_client::types;
 
 /// The information of the module which has been initiated and activated.
+#[derive(Clone)]
 pub struct ActivatedModuleInfo {
     /// The name of this module.
     pub name: &'static str,
