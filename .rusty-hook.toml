@@ -1,5 +1,5 @@
 [hooks]
-pre-commit = "cargo test && bash ./scripts/build-test.sh"
+pre-commit = "cargo test && ./scripts/build-test.py"
 pre-push = "bash ./scripts/build-test.sh && cargo fmt -- --check && cargo clippy"
 
 [logging]
