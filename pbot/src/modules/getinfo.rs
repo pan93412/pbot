@@ -5,27 +5,17 @@
 
 use actix::prelude::*;
 use log::info;
+use pbot_modules_derive::{ModuleActivator, ModuleActor, ModuleMeta};
 
-use super::base::{ModuleActivator, ModuleMessage, ModuleMeta};
+use super::base::ModuleMessage;
 
 /// The GetInfoModule module that is for debugging.
 ///
 /// We don't recommended you enabling this without a reasonable reason,
 /// since it is useless while noising.
-#[derive(Clone)]
+#[derive(Clone, ModuleActor, ModuleActivator, ModuleMeta)]
+#[name = "GetInfoModule"]
 pub struct GetInfoModuleActor;
-
-impl Actor for GetInfoModuleActor {
-    type Context = Context<Self>;
-
-    fn started(&mut self, _: &mut Self::Context) {
-        info!("🌟 {} started!", self.name());
-    }
-
-    fn stopped(&mut self, _: &mut Self::Context) {
-        info!("👋 {} stopped!", self.name());
-    }
-}
 
 impl Handler<ModuleMessage> for GetInfoModuleActor {
     type Result = ResponseActFuture<Self, anyhow::Result<()>>;
@@ -49,11 +39,3 @@ impl Handler<ModuleMessage> for GetInfoModuleActor {
         .boxed_local()
     }
 }
-
-impl ModuleMeta for GetInfoModuleActor {
-    fn name(&self) -> &'static str {
-        "GetInfoModule"
-    }
-}
-
-impl ModuleActivator for GetInfoModuleActor {}

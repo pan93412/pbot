@@ -21,6 +21,7 @@ log = "0.4.14"
 rpassword = "5.0.1"
 simple_logger = "2.1.0"
 tokio = { version = "1.17.0", features = ["full"] }
+pbot_modules_derive = { path = "../pbot_modules_derive" }
 
 [features]
 default = ["fwdmod", "addrankmod"]

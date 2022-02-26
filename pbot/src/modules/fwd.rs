@@ -11,30 +11,20 @@ use grammers_client::{
     InputMessage,
 };
 use log::{error, info, warn};
+use pbot_modules_derive::{ModuleActivator, ModuleActor, ModuleMeta};
 
 use crate::telegram::{client::commands::ForwardSingleMessageCommand, user::is_root_user};
 
-use super::base::{ModuleActivator, ModuleMessage, ModuleMeta};
+use super::base::ModuleMessage;
 
 const CMD: &str = "!cufwd";
 
 /// The FwdModule actor.
-#[derive(Clone)]
+#[derive(Clone, ModuleActor, ModuleActivator, ModuleMeta)]
+#[name = "FwdModule"]
 pub struct FwdModuleActor {
     /// Where the message will be forwarded to.
     pub target: Arc<Chat>,
-}
-
-impl Actor for FwdModuleActor {
-    type Context = Context<Self>;
-
-    fn started(&mut self, _: &mut Self::Context) {
-        info!("🌟 {} started! You can use it with {}.", self.name(), CMD);
-    }
-
-    fn stopped(&mut self, _: &mut Self::Context) {
-        info!("👋 {} ({}) stopped.", self.name(), CMD);
-    }
 }
 
 impl Handler<ModuleMessage> for FwdModuleActor {
@@ -114,11 +104,3 @@ impl Handler<ModuleMessage> for FwdModuleActor {
         .boxed_local()
     }
 }
-
-impl ModuleMeta for FwdModuleActor {
-    fn name(&self) -> &'static str {
-        "FwdModule"
-    }
-}
-
-impl ModuleActivator for FwdModuleActor {}

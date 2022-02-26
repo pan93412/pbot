@@ -6,28 +6,18 @@
 use actix::prelude::*;
 use grammers_client::InputMessage;
 use log::{debug, info};
+use pbot_modules_derive::{ModuleActivator, ModuleActor, ModuleMeta};
 
 use crate::telegram::{client::commands::GetAdminRightsBuilderCommand, user::is_root_user};
 
-use super::base::{ModuleActivator, ModuleMessage, ModuleMeta};
+use super::base::ModuleMessage;
 
 const CMD_PREFIX: &str = "!addrank";
 
 /// The AddRank actor.
-#[derive(Clone, Default)]
+#[derive(Clone, Default, ModuleActor, ModuleActivator, ModuleMeta)]
+#[name = "AddRankModule"]
 pub struct AddRankModuleActor;
-
-impl Actor for AddRankModuleActor {
-    type Context = Context<Self>;
-
-    fn started(&mut self, _: &mut Self::Context) {
-        info!("🌟 {} started!", self.name());
-    }
-
-    fn stopped(&mut self, _: &mut Self::Context) {
-        info!("👋 {} stopped.", self.name());
-    }
-}
 
 impl Handler<ModuleMessage> for AddRankModuleActor {
     type Result = ResponseActFuture<Self, anyhow::Result<()>>;
@@ -112,15 +102,6 @@ impl Handler<ModuleMessage> for AddRankModuleActor {
         .boxed_local()
     }
 }
-
-impl ModuleMeta for AddRankModuleActor {
-    fn name(&self) -> &'static str {
-        // DEVEDIT: Your module name for users.
-        "AddRankModule"
-    }
-}
-
-impl ModuleActivator for AddRankModuleActor {}
 
 /// Extract the rank argument from the command message.
 fn extract_rank(message: &grammers_client::types::Message) -> Option<String> {
