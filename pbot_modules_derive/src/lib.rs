@@ -63,14 +63,15 @@ pub fn derive_module_actor(input: proc_macro::TokenStream) -> proc_macro::TokenS
                 info!("👋 {} stopped.", self.name());
             }
         }
-    }.into()
+    }
+    .into()
 }
 
 /// The name part of a module metadata attribute.
 ///
 /// ```ignore
 /// # use pbot_modules_derive::ModuleMeta;
-/// 
+///
 /// #[derive(ModuleMeta)]
 /// #[name = "YourModule"]
 /// pub struct Module;
