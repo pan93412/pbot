@@ -29,7 +29,7 @@ cargo build [--features <modules id>]
 cargo doc [--features <modules id>]
 ```
 
-### Run
+### Run for Development
 
 ```sh
 cargo run [--features <modules id>]

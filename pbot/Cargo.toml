@@ -4,6 +4,7 @@ description = "pan93412's extensible userbot, which is full-documented, engineer
 authors = ["pan93412 <pan93412@gmail.com>"]
 repository = "https://github.com/pan93412/pbot"
 keywords = ["pbot", "actor", "userbot", "bot", "extensible", "full-documented", "enginnered"]
+license = "GPL-3.0-or-later"
 version = "0.1.1"
 edition = "2021"
 publish = false
