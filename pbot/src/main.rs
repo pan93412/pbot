@@ -115,6 +115,7 @@ async fn main() {
     .expect("failed to retrieve updates")
     {
         for update in updates {
+            // Send request to ClientModuleExecutor, let it distribute Update to modules.
             tokio::spawn(executor.send(ClientModuleMessage { update }));
         }
     }
