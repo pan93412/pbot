@@ -1,2 +1,2 @@
 [workspace]
-members = ["pbot"]
+members = ["pbot", "pbot_modules_derive"]

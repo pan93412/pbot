@@ -838,10 +838,20 @@ dependencies = [
  "grammers-client",
  "grammers-session",
  "log",
+ "pbot_modules_derive",
  "rpassword",
  "rusty-hook",
  "simple_logger",
  "tokio",
+]
+
+[[package]]
+name = "pbot_modules_derive"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
