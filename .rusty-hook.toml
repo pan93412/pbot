@@ -1,6 +1,6 @@
 [hooks]
-pre-commit = "cargo test && ./scripts/build-test.py"
-pre-push = "bash ./scripts/build-test.sh && cargo fmt -- --check && cargo clippy"
+pre-commit = "cargo test && cargo fmt -- --check"
+pre-push = "./scripts/build-test.py && cargo clippy"
 
 [logging]
 verbose = true
